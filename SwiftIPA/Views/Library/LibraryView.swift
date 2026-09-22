@@ -88,7 +88,7 @@ struct LibraryView: View {
                 }
             }
         }
-        .fileImporter(isPresented: $showingImporter, allowedContentTypes: [.data, .zip], allowsMultipleSelection: true) { result in
+        .fileImporter(isPresented: $showingImporter, allowedContentTypes: [.data, .zip, .item], allowsMultipleSelection: false) { result in
             handleImport(result)
         }
         .sheet(isPresented: $showingDownloadSheet) {
@@ -123,6 +123,11 @@ struct LibraryView: View {
                 .padding(.horizontal, SISpacing.xl)
             Button("Import IPA") { showingImporter = true }
                 .buttonStyle(.siPrimary)
+            Text("Downloaded an IPA in your browser? Tap Share on it there and choose SwiftIPA — that's more reliable than picking it from Files.")
+                .font(SIFont.caption)
+                .foregroundStyle(SIColor.textSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, SISpacing.xl)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

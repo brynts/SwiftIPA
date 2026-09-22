@@ -60,7 +60,7 @@ struct TweaksLibraryView: View {
         }
         .sheet(isPresented: $showingPicker) {
             DocumentPickerView(
-                contentTypes: [.data],
+                contentTypes: [.data, .item],
                 allowsMultipleSelection: true
             ) { urls in
                 guard !urls.isEmpty else { return }

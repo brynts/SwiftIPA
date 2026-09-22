@@ -58,12 +58,12 @@ struct AddCertificateSheet: View {
                 }
             }
             .sheet(isPresented: $showingP12Picker) {
-                DocumentPickerView(contentTypes: [.data], allowsMultipleSelection: false) { urls in
+                DocumentPickerView(contentTypes: [.data, .item], allowsMultipleSelection: false) { urls in
                     p12URL = urls.first
                 }
             }
             .sheet(isPresented: $showingProvisionPicker) {
-                DocumentPickerView(contentTypes: [.data], allowsMultipleSelection: false) { urls in
+                DocumentPickerView(contentTypes: [.data, .item], allowsMultipleSelection: false) { urls in
                     provisionURL = urls.first
                 }
             }
