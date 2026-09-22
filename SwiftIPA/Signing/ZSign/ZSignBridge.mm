@@ -179,4 +179,18 @@
 #endif
 }
 
++ (NSData *)cmsContentFromData:(NSData *)data {
+#if SWIFTIPA_HAS_ZSIGN
+    std::string input(static_cast<const char *>(data.bytes), data.length);
+    std::string output;
+    if (!ZSignAsset::GetCMSContent(input, output)) {
+        return nil;
+    }
+    return [NSData dataWithBytes:output.data() length:output.size()];
+#else
+    (void)data;
+    return nil;
+#endif
+}
+
 @end

@@ -40,20 +40,9 @@ enum CertificateService {
     static func inspectProvisioningProfile(at url: URL) throws -> ProvisioningProfileInfo {
         let raw = try Data(contentsOf: url)
 
-        var decoder: CMSDecoder?
-        CMSDecoderCreate(&decoder)
-        guard let decoder else { throw CertificateServiceError.cannotReadProfile }
-
-        let status = raw.withUnsafeBytes { buffer -> OSStatus in
-            guard let base = buffer.bindMemory(to: UInt8.self).baseAddress else { return errSecParam }
-            return CMSDecoderUpdateMessage(decoder, base, raw.count)
+        guard let contentData = ZSignBridge.cmsContent(from: raw) else {
+            throw CertificateServiceError.cannotReadProfile
         }
-        guard status == errSecSuccess else { throw CertificateServiceError.cannotReadProfile }
-        CMSDecoderFinalizeMessage(decoder)
-
-        var contentData: CFData?
-        CMSDecoderCopyContent(decoder, &contentData)
-        guard let contentData = contentData as Data? else { throw CertificateServiceError.cannotReadProfile }
 
         guard let plist = try? PropertyListSerialization.propertyList(from: contentData, format: nil) as? [String: Any] else {
             throw CertificateServiceError.cannotReadProfile

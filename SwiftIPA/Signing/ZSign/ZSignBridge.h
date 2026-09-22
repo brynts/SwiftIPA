@@ -41,12 +41,16 @@ typedef NS_ENUM(NSInteger, ZSignResultCode) {
 @interface ZSignBridge : NSObject
 
 + (BOOL)isEngineAvailable;
-+ (ZSignResult *)signAppFolderAtPath:(NSString *)folderPath options:(ZSignOptions *)options;
++ (ZSignResult *)signAppFolderAtPath:(NSString *)folderPath
+                              options:(ZSignOptions *)options
+    NS_SWIFT_NAME(signAppFolder(atPath:options:));
 + (BOOL)generateSelfSignedIdentityAtP12Path:(NSString *)p12Path
                                     password:(NSString *)password
                                   commonName:(NSString *)commonName
                               validityInDays:(NSInteger)validityInDays
-                                       error:(NSString * _Nullable * _Nullable)error;
+                                       error:(NSString * _Nullable * _Nullable)error
+    NS_SWIFT_NAME(generateSelfSignedIdentity(atP12Path:password:commonName:validityInDays:error:));
++ (nullable NSData *)cmsContentFromData:(NSData *)data NS_SWIFT_NAME(cmsContent(from:));
 
 @end
 
