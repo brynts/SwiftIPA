@@ -88,7 +88,7 @@ struct LibraryView: View {
                 }
             }
         }
-        .fileImporter(isPresented: $showingImporter, allowedContentTypes: [.init(filenameExtension: "ipa") ?? .data], allowsMultipleSelection: true) { result in
+        .fileImporter(isPresented: $showingImporter, allowedContentTypes: [.data, .zip], allowsMultipleSelection: true) { result in
             handleImport(result)
         }
         .sheet(isPresented: $showingDownloadSheet) {
