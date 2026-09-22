@@ -11,12 +11,17 @@
 #include <openssl/pkcs12.h>
 #include <openssl/rsa.h>
 #include <openssl/evp.h>
+#include <time.h>
 #endif
 
 @implementation ZSignResult
 @end
 
 @implementation ZSignOptions
+@end
+
+@interface ZSignBridge ()
++ (nullable NSDate *)dateFromCertificateData:(NSData *)certificateData notAfter:(BOOL)wantsNotAfter;
 @end
 
 @implementation ZSignBridge
@@ -176,6 +181,48 @@
 #else
     if (error) *error = @"The zsign engine is not vendored in this build.";
     return NO;
+#endif
+}
+
++ (NSDate *)notBeforeDateForCertificateData:(NSData *)certificateData {
+    return [self dateFromCertificateData:certificateData notAfter:NO];
+}
+
++ (NSDate *)notAfterDateForCertificateData:(NSData *)certificateData {
+    return [self dateFromCertificateData:certificateData notAfter:YES];
+}
+
++ (NSDate *)dateFromCertificateData:(NSData *)certificateData notAfter:(BOOL)wantsNotAfter {
+#if SWIFTIPA_HAS_ZSIGN
+    const unsigned char *bytes = static_cast<const unsigned char *>(certificateData.bytes);
+    X509 *cert = d2i_X509(NULL, &bytes, (long)certificateData.length);
+    if (!cert) {
+        return nil;
+    }
+
+    const ASN1_TIME *asn1Time = wantsNotAfter ? X509_get0_notAfter(cert) : X509_get0_notBefore(cert);
+    if (!asn1Time) {
+        X509_free(cert);
+        return nil;
+    }
+
+    struct tm timeComponents;
+    memset(&timeComponents, 0, sizeof(timeComponents));
+    if (!ASN1_TIME_to_tm(asn1Time, &timeComponents)) {
+        X509_free(cert);
+        return nil;
+    }
+    X509_free(cert);
+
+    time_t seconds = timegm(&timeComponents);
+    if (seconds == (time_t)-1) {
+        return nil;
+    }
+    return [NSDate dateWithTimeIntervalSince1970:(NSTimeInterval)seconds];
+#else
+    (void)certificateData;
+    (void)wantsNotAfter;
+    return nil;
 #endif
 }
 

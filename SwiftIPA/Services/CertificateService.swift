@@ -92,23 +92,14 @@ enum CertificateService {
         var commonName: CFString?
         SecCertificateCopyCommonName(certificate, &commonName)
 
-        let keys = [kSecOIDX509V1ValidityNotAfter, kSecOIDX509V1ValidityNotBefore] as CFArray
-        let values = SecCertificateCopyValues(certificate, keys, nil) as? [String: Any]
-
-        let notAfter = numericDate(values?[kSecOIDX509V1ValidityNotAfter as String])
-        let notBefore = numericDate(values?[kSecOIDX509V1ValidityNotBefore as String])
+        let certificateData = SecCertificateCopyData(certificate) as Data
+        let notAfter = ZSignBridge.notAfterDate(forCertificateData: certificateData)
+        let notBefore = ZSignBridge.notBeforeDate(forCertificateData: certificateData)
 
         return P12Info(
             subjectCommonName: commonName as String?,
             expirationDate: notAfter,
             issuedDate: notBefore
         )
-    }
-
-    private static func numericDate(_ raw: Any?) -> Date? {
-        guard let dict = raw as? [String: Any], let seconds = dict[kSecPropertyKeyValue as String] as? Double else {
-            return nil
-        }
-        return Date(timeIntervalSinceReferenceDate: seconds)
     }
 }

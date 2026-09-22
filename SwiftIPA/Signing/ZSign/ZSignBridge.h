@@ -51,6 +51,8 @@ typedef NS_ENUM(NSInteger, ZSignResultCode) {
                                        error:(NSString * _Nullable * _Nullable)error
     NS_SWIFT_NAME(generateSelfSignedIdentity(atP12Path:password:commonName:validityInDays:error:));
 + (nullable NSData *)cmsContentFromData:(NSData *)data NS_SWIFT_NAME(cmsContent(from:));
++ (nullable NSDate *)notBeforeDateForCertificateData:(NSData *)certificateData NS_SWIFT_NAME(notBeforeDate(forCertificateData:));
++ (nullable NSDate *)notAfterDateForCertificateData:(NSData *)certificateData NS_SWIFT_NAME(notAfterDate(forCertificateData:));
 
 @end
 
