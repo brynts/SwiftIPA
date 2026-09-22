@@ -15,11 +15,19 @@
       "category": "utilities",
       "version": "1.0.0",
       "versionDate": "2026-09-22",
-      "versionDescription": "- Fix silent import freeze (heavy work now runs off the main thread with progress UI); add Feather-parity signing options: appearance, Liquid Glass mode, Game Mode, Files app access, force-localized display name, inject-into-extensions, install-after-signing\n- Update AltStore source for build 5",
-      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-6/SwiftIPA-unsigned.ipa",
+      "versionDescription": "- Update AltStore source for build 6",
+      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-7/SwiftIPA-unsigned.ipa",
       "size": 3038263,
       "minOSVersion": "16.0",
       "versions": [
+        {
+          "version": "1.0.0",
+          "date": "2026-09-22",
+          "localizedDescription": "- Update AltStore source for build 6",
+          "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-7/SwiftIPA-unsigned.ipa",
+          "size": 3038263,
+          "minOSVersion": "16.0"
+        },
         {
           "version": "1.0.0",
           "date": "2026-09-22",
