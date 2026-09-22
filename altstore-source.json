@@ -15,11 +15,19 @@
       "category": "utilities",
       "version": "1.0.0",
       "versionDate": "2026-09-22",
-      "versionDescription": "Initial release.",
-      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/latest/download/SwiftIPA-unsigned.ipa",
-      "size": 0,
+      "versionDescription": "- Add the missing openssl/x509v3.h include for the self-signed identity generator\n- Fix certificate validity date reading: SecCertificateCopyValues and the X.509 OID constants aren't available on iOS, use OpenSSL directly instead\n- Fix provisioning profile parsing: use zsign's CMS decoder instead of the macOS-only CMSDecoder API\n- Initial commit: SwiftIPA, an on-device IPA signer built on zsign",
+      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-5/SwiftIPA-unsigned.ipa",
+      "size": 3003652,
       "minOSVersion": "16.0",
       "versions": [
+        {
+          "version": "1.0.0",
+          "date": "2026-09-22",
+          "localizedDescription": "- Add the missing openssl/x509v3.h include for the self-signed identity generator\n- Fix certificate validity date reading: SecCertificateCopyValues and the X.509 OID constants aren't available on iOS, use OpenSSL directly instead\n- Fix provisioning profile parsing: use zsign's CMS decoder instead of the macOS-only CMSDecoder API\n- Initial commit: SwiftIPA, an on-device IPA signer built on zsign",
+          "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-5/SwiftIPA-unsigned.ipa",
+          "size": 3003652,
+          "minOSVersion": "16.0"
+        },
         {
           "version": "1.0.0",
           "date": "2026-09-22",
