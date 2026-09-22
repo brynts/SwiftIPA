@@ -18,6 +18,46 @@ enum BundleIdentifierRule: String, Codable, CaseIterable, Identifiable {
     }
 }
 
+enum AppAppearance: String, Codable, CaseIterable, Identifiable {
+    case automatic
+    case light
+    case dark
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .automatic: return String(localized: "Automatic")
+        case .light: return String(localized: "Light")
+        case .dark: return String(localized: "Dark")
+        }
+    }
+
+    var plistValue: String? {
+        switch self {
+        case .automatic: return nil
+        case .light: return "Light"
+        case .dark: return "Dark"
+        }
+    }
+}
+
+enum LiquidGlassMode: String, Codable, CaseIterable, Identifiable {
+    case automatic
+    case disabled
+    case forced
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .automatic: return String(localized: "Automatic")
+        case .disabled: return String(localized: "Disable Liquid Glass")
+        case .forced: return String(localized: "Force Liquid Glass")
+        }
+    }
+}
+
 struct SigningOptions: Codable, Hashable {
     var displayName: String = ""
     var bundleIdentifier: String = ""
@@ -28,25 +68,31 @@ struct SigningOptions: Codable, Hashable {
     var minimumOSVersion: String = ""
     var customIconPath: String?
     var entitlements: String?
+    var appearance: AppAppearance = .automatic
+    var liquidGlassMode: LiquidGlassMode = .automatic
 
     var removePlugins: Bool = false
     var removeWatchApp: Bool = false
-    var removeExtensions: Bool = false
     var removeLocalizations: Bool = false
     var removeDeviceRestrictions: Bool = true
     var removeURLSchemes: Bool = false
     var removeProvisioningProfile: Bool = false
 
     var forceFileSharing: Bool = false
+    var forceDocumentBrowser: Bool = false
     var forceProMotion: Bool = false
     var forceFullScreen: Bool = false
+    var forceGameMode: Bool = false
     var forceLocalNetworkAccess: Bool = false
     var allowArbitraryLoads: Bool = false
+    var forceLocalizedDisplayName: Bool = false
 
     var injectedDylibIDs: [UUID] = []
     var weakInjection: Bool = true
     var injectAtFront: Bool = false
+    var injectIntoExtensions: Bool = false
 
+    var installAfterSigning: Bool = false
     var useCache: Bool = true
     var stripExistingSignature: Bool = true
 
@@ -66,7 +112,7 @@ struct SigningOptions: Codable, Hashable {
     }
 
     var touchesBundleContents: Bool {
-        removePlugins || removeWatchApp || removeExtensions || removeLocalizations
+        removePlugins || removeWatchApp || removeLocalizations
             || removeURLSchemes || !injectedDylibIDs.isEmpty || customIconPath != nil
     }
 }

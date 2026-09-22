@@ -84,7 +84,7 @@ struct DownloadByURLSheet: View {
                 if !buffer.isEmpty { handle.write(buffer) }
                 try? handle.close()
 
-                _ = try AppLibraryStore.shared.importIPA(at: destination, sourceName: url.host)
+                _ = try await AppLibraryStore.shared.importIPA(at: destination, sourceName: url.host)
                 try? FileManager.default.removeItem(at: destination)
 
                 await MainActor.run { dismiss() }

@@ -3,6 +3,7 @@ import Combine
 
 struct SigningSheetView: View {
     let entryID: UUID
+    var onSignedSuccessfully: (() -> Void)?
 
     @ObservedObject private var library = AppLibraryStore.shared
     @ObservedObject private var certificateStore = CertificateStore.shared
@@ -31,6 +32,7 @@ struct SigningSheetView: View {
                     presetSection
                     certificateSection
                     identitySection(entry: entry)
+                    appearanceSection
                     modifiersSection
                     tweaksSection
                     entitlementsSection
@@ -165,6 +167,25 @@ struct SigningSheetView: View {
         }
     }
 
+    private var appearanceSection: some View {
+        Section {
+            Picker("Appearance", selection: $options.appearance) {
+                ForEach(AppAppearance.allCases) { appearance in
+                    Text(appearance.displayName).tag(appearance)
+                }
+            }
+            Picker("Design", selection: $options.liquidGlassMode) {
+                ForEach(LiquidGlassMode.allCases) { mode in
+                    Text(mode.displayName).tag(mode)
+                }
+            }
+        } header: {
+            Text("Appearance")
+        } footer: {
+            Text("Design forces an app to use, or not use, iOS 26's Liquid Glass redesign. Not every app supports being switched either way.")
+        }
+    }
+
     private var modifiersSection: some View {
         Section {
             Toggle("Remove App Extensions", isOn: $options.removePlugins)
@@ -172,12 +193,17 @@ struct SigningSheetView: View {
             Toggle("Remove Embedded Provisioning", isOn: $options.removeProvisioningProfile)
             Toggle("Remove Localizations Except English", isOn: $options.removeLocalizations)
             Toggle("Remove URL Schemes", isOn: $options.removeURLSchemes)
-            Toggle("Force File Sharing", isOn: $options.forceFileSharing)
+            Toggle("iTunes File Sharing", isOn: $options.forceFileSharing)
+            Toggle("Files App Access", isOn: $options.forceDocumentBrowser)
             Toggle("Force Full Screen", isOn: $options.forceFullScreen)
             Toggle("Force ProMotion (120Hz)", isOn: $options.forceProMotion)
+            Toggle("Force Game Mode", isOn: $options.forceGameMode)
             Toggle("Allow Arbitrary Network Loads", isOn: $options.allowArbitraryLoads)
+            Toggle("Force Localized Display Name", isOn: $options.forceLocalizedDisplayName)
         } header: {
             Text("Modifiers")
+        } footer: {
+            Text("Force Localized Display Name overrides the app name shown under every language the app supports, not just the default one.")
         }
     }
 
@@ -207,6 +233,7 @@ struct SigningSheetView: View {
                 }
             }
             Toggle("Inject Weakly", isOn: $options.weakInjection)
+            Toggle("Inject into Extensions", isOn: $options.injectIntoExtensions)
         } header: {
             Text("Tweaks")
         }
@@ -241,6 +268,7 @@ struct SigningSheetView: View {
         Section {
             Toggle("Use Instant-Resign Cache", isOn: $options.useCache)
             Toggle("Force Re-sign (skip zsign's own cache)", isOn: $options.stripExistingSignature)
+            Toggle("Install After Signing", isOn: $options.installAfterSigning)
         } header: {
             Text("Advanced")
         } footer: {
@@ -302,7 +330,11 @@ struct SigningSheetView: View {
                 if case .failed(let message) = job.status {
                     errorMessage = message
                 } else {
+                    let shouldInstall = options.installAfterSigning
                     dismiss()
+                    if shouldInstall {
+                        onSignedSuccessfully?()
+                    }
                 }
             }
         }

@@ -131,6 +131,16 @@
         }
       }
     },
+    "Automatic": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatisch"
+          }
+        }
+      }
+    },
     "Batch Sign": {
       "localizations": {
         "de": {
@@ -401,6 +411,16 @@
         }
       }
     },
+    "Dark": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dunkel"
+          }
+        }
+      }
+    },
     "Days Remaining": {
       "localizations": {
         "de": {
@@ -437,6 +457,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zertifikat löschen"
+          }
+        }
+      }
+    },
+    "Design": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Design"
+          }
+        }
+      }
+    },
+    "Design forces an app to use, or not use, iOS 26's Liquid Glass redesign. Not every app supports being switched either way.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Design erzwingt, dass eine App das Liquid-Glass-Redesign von iOS 26 verwendet oder nicht verwendet. Nicht jede App unterstützt beide Richtungen."
+          }
+        }
+      }
+    },
+    "Disable Liquid Glass": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liquid Glass deaktivieren"
           }
         }
       }
@@ -631,6 +681,16 @@
         }
       }
     },
+    "Files App Access": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zugriff über Dateien-App"
+          }
+        }
+      }
+    },
     "Findings": {
       "localizations": {
         "de": {
@@ -657,6 +717,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vollbild erzwingen"
+          }
+        }
+      }
+    },
+    "Force Game Mode": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spielmodus erzwingen"
+          }
+        }
+      }
+    },
+    "Force Liquid Glass": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liquid Glass erzwingen"
+          }
+        }
+      }
+    },
+    "Force Localized Display Name": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lokalisierten Anzeigenamen erzwingen"
+          }
+        }
+      }
+    },
+    "Force Localized Display Name overrides the app name shown under every language the app supports, not just the default one.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erzwingt den Anzeigenamen in jeder von der App unterstützten Sprache, nicht nur in der Standardsprache."
           }
         }
       }
@@ -791,12 +891,42 @@
         }
       }
     },
+    "Importing \\(importingCount) apps…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\\(importingCount) Apps werden importiert…"
+          }
+        }
+      }
+    },
+    "Importing…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wird importiert…"
+          }
+        }
+      }
+    },
     "Inject Weakly": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Schwach einschleusen"
+          }
+        }
+      }
+    },
+    "Inject into Extensions": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In Erweiterungen einschleusen"
           }
         }
       }
@@ -827,6 +957,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Installieren"
+          }
+        }
+      }
+    },
+    "Install After Signing": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nach dem Signieren installieren"
           }
         }
       }
@@ -921,6 +1061,16 @@
         }
       }
     },
+    "Light": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hell"
+          }
+        }
+      }
+    },
     "Light Blue & Black": {
       "localizations": {
         "de": {
@@ -937,6 +1087,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hellblau & Weiß"
+          }
+        }
+      }
+    },
+    "Load Preset": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preset laden"
           }
         }
       }
@@ -1117,6 +1277,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "OK"
+          }
+        }
+      }
+    },
+    "Options": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Optionen"
           }
         }
       }
@@ -2067,6 +2237,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "\\(relativePath) hat noch die FairPlay-Verschlüsselung des App Store. Das Signieren läuft weiter, aber diese Datei ist vermutlich ein gecrackter oder DRM-geschützter Build."
+          }
+        }
+      }
+    },
+    "iTunes File Sharing": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iTunes-Dateifreigabe"
           }
         }
       }

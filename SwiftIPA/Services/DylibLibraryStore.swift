@@ -22,21 +22,35 @@ final class DylibLibraryStore: ObservableObject {
     }
 
     @discardableResult
-    func importFile(at sourceURL: URL, displayName: String? = nil) throws -> InjectedDylib {
-        let fileManager = FileManager.default
-        let needsAccess = sourceURL.startAccessingSecurityScopedResource()
-        defer { if needsAccess { sourceURL.stopAccessingSecurityScopedResource() } }
+    func importFile(at sourceURL: URL, displayName: String? = nil) async throws -> InjectedDylib {
+        let folder = folder
+        let resolvedDisplayName = displayName ?? sourceURL.deletingPathExtension().lastPathComponent
 
-        if sourceURL.pathExtension.lowercased() == "deb" {
-            let extracted = try DebExtractor.extractDylibs(from: sourceURL, into: folder)
-            guard let first = extracted.first else { throw DebExtractorError.noDylibFound }
-            return try registerImportedFile(at: first, displayName: displayName ?? sourceURL.deletingPathExtension().lastPathComponent)
+        let importedURL = try await Task.detached(priority: .userInitiated) { () -> URL in
+            let fileManager = FileManager.default
+            let needsAccess = sourceURL.startAccessingSecurityScopedResource()
+            defer { if needsAccess { sourceURL.stopAccessingSecurityScopedResource() } }
+
+            if sourceURL.pathExtension.lowercased() == "deb" {
+                let extracted = try DebExtractor.extractDylibs(from: sourceURL, into: folder)
+                guard let first = extracted.first else { throw DebExtractorError.noDylibFound }
+                return first
+            }
+
+            let destinationName = Self.uniqueFileName(for: sourceURL.lastPathComponent, in: folder)
+            let destination = folder.appendingPathComponent(destinationName)
+            try fileManager.copyItem(at: sourceURL, to: destination)
+            return destination
+        }.value
+
+        let size = (try? FileManager.default.attributesOfItem(atPath: importedURL.path)[.size] as? Int64) ?? 0
+        let entry = InjectedDylib(fileName: importedURL.lastPathComponent, displayName: resolvedDisplayName, byteSize: size)
+
+        await MainActor.run {
+            dylibs.append(entry)
+            persist()
         }
-
-        let destinationName = uniqueFileName(for: sourceURL.lastPathComponent)
-        let destination = folder.appendingPathComponent(destinationName)
-        try fileManager.copyItem(at: sourceURL, to: destination)
-        return try registerImportedFile(at: destination, displayName: displayName ?? sourceURL.deletingPathExtension().lastPathComponent)
+        return entry
     }
 
     func remove(_ dylib: InjectedDylib) {
@@ -51,15 +65,7 @@ final class DylibLibraryStore: ObservableObject {
         persist()
     }
 
-    private func registerImportedFile(at fileURL: URL, displayName: String) throws -> InjectedDylib {
-        let size = (try? FileManager.default.attributesOfItem(atPath: fileURL.path)[.size] as? Int64) ?? 0
-        let entry = InjectedDylib(fileName: fileURL.lastPathComponent, displayName: displayName, byteSize: size)
-        dylibs.append(entry)
-        persist()
-        return entry
-    }
-
-    private func uniqueFileName(for name: String) -> String {
+    private static func uniqueFileName(for name: String, in folder: URL) -> String {
         var candidate = name
         var attempt = 1
         while FileManager.default.fileExists(atPath: folder.appendingPathComponent(candidate).path) {

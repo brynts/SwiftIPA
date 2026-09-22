@@ -93,7 +93,7 @@ struct AddCertificateSheet: View {
 
         Task {
             do {
-                _ = try CertificateStore.shared.addCertificate(
+                _ = try await CertificateStore.shared.addCertificate(
                     name: name,
                     p12SourceURL: p12URL,
                     provisionSourceURL: provisionURL,

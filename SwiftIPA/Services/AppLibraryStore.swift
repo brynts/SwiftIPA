@@ -27,7 +27,20 @@ final class AppLibraryStore: ObservableObject {
     }
 
     @discardableResult
-    func importIPA(at sourceURL: URL, sourceName: String? = nil) throws -> AppEntry {
+    func importIPA(at sourceURL: URL, sourceName: String? = nil) async throws -> AppEntry {
+        let folder = folder
+        let entry = try await Task.detached(priority: .userInitiated) {
+            try Self.performImport(sourceURL: sourceURL, sourceName: sourceName, folder: folder)
+        }.value
+
+        await MainActor.run {
+            apps.insert(entry, at: 0)
+            persist()
+        }
+        return entry
+    }
+
+    private static func performImport(sourceURL: URL, sourceName: String?, folder: URL) throws -> AppEntry {
         let fileManager = FileManager.default
         let needsAccess = sourceURL.startAccessingSecurityScopedResource()
         defer { if needsAccess { sourceURL.stopAccessingSecurityScopedResource() } }
@@ -50,7 +63,7 @@ final class AppLibraryStore: ObservableObject {
 
         let size = (try? fileManager.attributesOfItem(atPath: destination.path)[.size] as? Int64) ?? 0
 
-        let entry = AppEntry(
+        return AppEntry(
             id: id,
             name: metadata.name,
             bundleIdentifier: metadata.bundleIdentifier,
@@ -63,29 +76,31 @@ final class AppLibraryStore: ObservableObject {
             originalBundleIdentifier: metadata.bundleIdentifier,
             sourceName: sourceName
         )
-        apps.insert(entry, at: 0)
-        persist()
-        return entry
     }
 
-    func markSigned(_ entryID: UUID, signedIPAURL: URL, options: SigningOptions, certificateID: UUID) throws {
-        guard let index = apps.firstIndex(where: { $0.id == entryID }) else { return }
-        let entry = apps[index]
-        let destination = ipaURL(for: entry)
-        if FileManager.default.fileExists(atPath: destination.path) {
-            try FileManager.default.removeItem(at: destination)
-        }
-        try FileManager.default.copyItem(at: signedIPAURL, to: destination)
+    func markSigned(_ entryID: UUID, signedIPAURL: URL, options: SigningOptions, certificateID: UUID) async throws {
+        guard let destination = await MainActor.run(body: { apps.first(where: { $0.id == entryID }).map(ipaURL) }) else { return }
+
+        try await Task.detached(priority: .userInitiated) {
+            if FileManager.default.fileExists(atPath: destination.path) {
+                try FileManager.default.removeItem(at: destination)
+            }
+            try FileManager.default.copyItem(at: signedIPAURL, to: destination)
+        }.value
 
         let size = (try? FileManager.default.attributesOfItem(atPath: destination.path)[.size] as? Int64) ?? 0
-        apps[index].byteSize = size
-        apps[index].signedAt = Date()
-        apps[index].certificateID = certificateID
-        apps[index].bundleIdentifier = options.resolvedBundleIdentifier(original: apps[index].originalBundleIdentifier ?? apps[index].bundleIdentifier)
-        if !options.displayName.isEmpty { apps[index].name = options.displayName }
-        if !options.version.isEmpty { apps[index].version = options.version }
-        if !options.build.isEmpty { apps[index].build = options.build }
-        persist()
+
+        await MainActor.run {
+            guard let index = apps.firstIndex(where: { $0.id == entryID }) else { return }
+            apps[index].byteSize = size
+            apps[index].signedAt = Date()
+            apps[index].certificateID = certificateID
+            apps[index].bundleIdentifier = options.resolvedBundleIdentifier(original: apps[index].originalBundleIdentifier ?? apps[index].bundleIdentifier)
+            if !options.displayName.isEmpty { apps[index].name = options.displayName }
+            if !options.version.isEmpty { apps[index].version = options.version }
+            if !options.build.isEmpty { apps[index].build = options.build }
+            persist()
+        }
     }
 
     func remove(_ entry: AppEntry) {

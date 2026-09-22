@@ -100,7 +100,9 @@ struct AppDetailView: View {
         }
         .listStyle(.insetGrouped)
         .sheet(isPresented: $showingSigningSheet) {
-            SigningSheetView(entryID: entry.id)
+            SigningSheetView(entryID: entry.id) {
+                showingInstall = true
+            }
         }
         .sheet(isPresented: $showingInspector) {
             if let report = inspectionReport {

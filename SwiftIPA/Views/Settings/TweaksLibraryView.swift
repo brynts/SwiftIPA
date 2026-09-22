@@ -5,10 +5,14 @@ struct TweaksLibraryView: View {
     @ObservedObject private var dylibStore = DylibLibraryStore.shared
     @State private var showingPicker = false
     @State private var errorMessage: String?
+    @State private var isImporting = false
 
     var body: some View {
         Group {
-            if dylibStore.dylibs.isEmpty {
+            if isImporting {
+                ProgressView("Importing…")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if dylibStore.dylibs.isEmpty {
                 VStack(spacing: SISpacing.md) {
                     Image(systemName: "puzzlepiece.extension.fill")
                         .font(.system(size: 40))
@@ -59,11 +63,20 @@ struct TweaksLibraryView: View {
                 contentTypes: [.init(filenameExtension: "dylib") ?? .data, .init(filenameExtension: "deb") ?? .data],
                 allowsMultipleSelection: true
             ) { urls in
-                for url in urls {
-                    do {
-                        _ = try dylibStore.importFile(at: url)
-                    } catch {
-                        errorMessage = error.localizedDescription
+                guard !urls.isEmpty else { return }
+                isImporting = true
+                Task {
+                    var firstError: String?
+                    for url in urls {
+                        do {
+                            _ = try await dylibStore.importFile(at: url)
+                        } catch {
+                            if firstError == nil { firstError = error.localizedDescription }
+                        }
+                    }
+                    await MainActor.run {
+                        isImporting = false
+                        errorMessage = firstError
                     }
                 }
             }

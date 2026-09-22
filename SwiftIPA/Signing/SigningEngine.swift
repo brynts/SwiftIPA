@@ -48,7 +48,7 @@ actor SigningEngine {
     private func execute(_ job: SigningJob) async {
         do {
             let outputURL = try await sign(job: job)
-            try AppLibraryStore.shared.markSigned(
+            try await AppLibraryStore.shared.markSigned(
                 job.appEntryID,
                 signedIPAURL: outputURL,
                 options: job.options,
@@ -101,6 +101,9 @@ actor SigningEngine {
         if job.options.removeLocalizations {
             InfoPlistPatcher.removeLocalizations(inAppFolder: extracted.appFolder)
         }
+        if job.options.forceLocalizedDisplayName, !job.options.displayName.isEmpty {
+            InfoPlistPatcher.forceLocalizedDisplayName(job.options.displayName, inAppFolder: extracted.appFolder)
+        }
 
         var entitlementsURL: URL?
         if let entitlementsText = job.options.entitlements, !entitlementsText.isEmpty {
@@ -141,6 +144,7 @@ actor SigningEngine {
             removeUISupportedDevices: job.options.removeDeviceRestrictions,
             removeProvisionAfterSigning: job.options.removeProvisioningProfile,
             weakInject: job.options.weakInjection,
+            injectIntoExtensions: job.options.injectIntoExtensions,
             forceSign: job.options.stripExistingSignature
         )
 

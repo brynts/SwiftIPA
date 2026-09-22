@@ -12,7 +12,11 @@ enum InfoPlistPatcher {
 
         if options.forceFileSharing {
             plist["UIFileSharingEnabled"] = true
+            changed = true
+        }
+        if options.forceDocumentBrowser {
             plist["LSSupportsOpeningDocumentsInPlace"] = true
+            plist["UISupportsDocumentBrowser"] = true
             changed = true
         }
         if options.forceFullScreen {
@@ -21,6 +25,24 @@ enum InfoPlistPatcher {
         }
         if options.forceProMotion {
             plist["CADisableMinimumFrameDurationOnPhone"] = true
+            changed = true
+        }
+        if options.forceGameMode {
+            plist["GCSupportsGameMode"] = true
+            changed = true
+        }
+        if let appearanceValue = options.appearance.plistValue {
+            plist["UIUserInterfaceStyle"] = appearanceValue
+            changed = true
+        }
+        switch options.liquidGlassMode {
+        case .automatic:
+            break
+        case .disabled:
+            plist["UIDesignRequiresCompatibility"] = true
+            changed = true
+        case .forced:
+            plist["UIDesignRequiresCompatibility"] = false
             changed = true
         }
         if options.removeURLSchemes {
@@ -50,6 +72,24 @@ enum InfoPlistPatcher {
             let name = item.deletingPathExtension().lastPathComponent
             guard !preferredLanguages.contains(name) else { continue }
             try? fileManager.removeItem(at: item)
+        }
+    }
+
+    static func forceLocalizedDisplayName(_ displayName: String, inAppFolder appFolder: URL) {
+        guard !displayName.isEmpty else { return }
+        let fileManager = FileManager.default
+        guard let contents = try? fileManager.contentsOfDirectory(at: appFolder, includingPropertiesForKeys: nil) else { return }
+
+        for item in contents where item.pathExtension == "lproj" {
+            let stringsURL = item.appendingPathComponent("InfoPlist.strings")
+            var entries: [String: String] = [:]
+            if let data = try? Data(contentsOf: stringsURL) {
+                entries = (try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: String]) ?? [:]
+            }
+            entries["CFBundleDisplayName"] = displayName
+            entries["CFBundleName"] = displayName
+            guard let encoded = try? PropertyListSerialization.data(fromPropertyList: entries, format: .xml, options: 0) else { continue }
+            try? encoded.write(to: stringsURL, options: .atomic)
         }
     }
 }

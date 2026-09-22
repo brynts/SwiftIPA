@@ -51,10 +51,12 @@ struct RootTabView: View {
     }
 
     private func handleForeground() {
-        importPending()
+        Task {
+            await importPending()
+        }
     }
 
-    private func importPending() {
+    private func importPending() async {
         let pending = InboxStore.takePending()
         guard !pending.isEmpty else { return }
 
@@ -64,7 +66,7 @@ struct RootTabView: View {
             do {
                 try? FileManager.default.removeItem(at: tempURL)
                 try item.data.write(to: tempURL)
-                _ = try AppLibraryStore.shared.importIPA(at: tempURL, sourceName: String(localized: "Shared from another app"))
+                _ = try await AppLibraryStore.shared.importIPA(at: tempURL, sourceName: String(localized: "Shared from another app"))
                 imported += 1
             } catch {
                 continue

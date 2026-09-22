@@ -68,7 +68,7 @@
     bundle.m_bRemoveExtensions = options.removeExtensions;
     bundle.m_bRemoveWatchApp = options.removeWatchApp;
     bundle.m_bRemoveUISupportedDevices = options.removeUISupportedDevices;
-    bundle.m_bInjectExtensions = false;
+    bundle.m_bInjectExtensions = options.injectIntoExtensions;
 
     std::vector<std::string> dylibs;
     for (NSString *path in options.dylibPathsToInject) {

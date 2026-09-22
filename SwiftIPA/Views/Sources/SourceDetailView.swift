@@ -54,7 +54,7 @@ struct SourceDetailView: View {
                 let url = try await RepositoryService.download(version) { value in
                     Task { @MainActor in progress = value }
                 }
-                let entry = try AppLibraryStore.shared.importIPA(at: url, sourceName: source?.name)
+                let entry = try await AppLibraryStore.shared.importIPA(at: url, sourceName: source?.name)
                 try? FileManager.default.removeItem(at: url)
                 await MainActor.run {
                     downloadingID = nil

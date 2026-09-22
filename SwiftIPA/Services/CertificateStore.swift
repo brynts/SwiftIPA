@@ -47,48 +47,54 @@ final class CertificateStore: ObservableObject {
         p12SourceURL: URL,
         provisionSourceURL: URL,
         password: String
-    ) throws -> SigningCertificate {
-        let fileManager = FileManager.default
+    ) async throws -> SigningCertificate {
         let id = UUID()
+        let folder = folder
 
-        let p12Access = p12SourceURL.startAccessingSecurityScopedResource()
-        let provisionAccess = provisionSourceURL.startAccessingSecurityScopedResource()
-        defer {
-            if p12Access { p12SourceURL.stopAccessingSecurityScopedResource() }
-            if provisionAccess { provisionSourceURL.stopAccessingSecurityScopedResource() }
-        }
+        let certificate = try await Task.detached(priority: .userInitiated) { () -> SigningCertificate in
+            let fileManager = FileManager.default
+            let p12Access = p12SourceURL.startAccessingSecurityScopedResource()
+            let provisionAccess = provisionSourceURL.startAccessingSecurityScopedResource()
+            defer {
+                if p12Access { p12SourceURL.stopAccessingSecurityScopedResource() }
+                if provisionAccess { provisionSourceURL.stopAccessingSecurityScopedResource() }
+            }
 
-        let p12FileName = "\(id.uuidString).p12"
-        let provisionFileName = "\(id.uuidString).mobileprovision"
-        let p12Destination = folder.appendingPathComponent(p12FileName)
-        let provisionDestination = folder.appendingPathComponent(provisionFileName)
+            let p12FileName = "\(id.uuidString).p12"
+            let provisionFileName = "\(id.uuidString).mobileprovision"
+            let p12Destination = folder.appendingPathComponent(p12FileName)
+            let provisionDestination = folder.appendingPathComponent(provisionFileName)
 
-        try fileManager.copyItem(at: p12SourceURL, to: p12Destination)
-        try fileManager.copyItem(at: provisionSourceURL, to: provisionDestination)
+            try fileManager.copyItem(at: p12SourceURL, to: p12Destination)
+            try fileManager.copyItem(at: provisionSourceURL, to: provisionDestination)
 
-        let profileInfo = try CertificateService.inspectProvisioningProfile(at: provisionDestination)
-        let p12Info = try? CertificateService.inspectP12(at: p12Destination, password: password)
+            let profileInfo = try CertificateService.inspectProvisioningProfile(at: provisionDestination)
+            let p12Info = try? CertificateService.inspectP12(at: p12Destination, password: password)
 
-        var certificate = SigningCertificate(
-            id: id,
-            name: name,
-            teamName: profileInfo.teamName,
-            teamIdentifier: profileInfo.teamIdentifier,
-            issuedAt: p12Info?.issuedDate,
-            expiresAt: profileInfo.expirationDate,
-            p12FileName: p12FileName,
-            provisionFileName: provisionFileName,
-            provisionedDeviceCount: profileInfo.deviceCount,
-            supportsUnrestrictedEntitlements: profileInfo.supportsUnrestrictedEntitlements
-        )
-        certificate.lastRevocationCheck = Date()
+            var certificate = SigningCertificate(
+                id: id,
+                name: name,
+                teamName: profileInfo.teamName,
+                teamIdentifier: profileInfo.teamIdentifier,
+                issuedAt: p12Info?.issuedDate,
+                expiresAt: profileInfo.expirationDate,
+                p12FileName: p12FileName,
+                provisionFileName: provisionFileName,
+                provisionedDeviceCount: profileInfo.deviceCount,
+                supportsUnrestrictedEntitlements: profileInfo.supportsUnrestrictedEntitlements
+            )
+            certificate.lastRevocationCheck = Date()
+            return certificate
+        }.value
 
         KeychainStore.setPassword(password, forCertificateID: id)
-        certificates.append(certificate)
-        if defaultCertificateID == nil {
-            setDefault(certificate.id)
+        await MainActor.run {
+            certificates.append(certificate)
+            if defaultCertificateID == nil {
+                setDefault(certificate.id)
+            }
+            persist()
         }
-        persist()
         return certificate
     }
 

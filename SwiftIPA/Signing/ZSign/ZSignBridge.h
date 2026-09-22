@@ -27,6 +27,7 @@ typedef NS_ENUM(NSInteger, ZSignResultCode) {
 @property (nonatomic, copy, nullable) NSString *bundleShortVersion;
 @property (nonatomic, assign) BOOL forceSign;
 @property (nonatomic, assign) BOOL weakInject;
+@property (nonatomic, assign) BOOL injectIntoExtensions;
 @property (nonatomic, assign) BOOL adhoc;
 @property (nonatomic, copy) NSArray<NSString *> *dylibPathsToInject;
 @property (nonatomic, copy) NSArray<NSString *> *dylibNamesToRemove;

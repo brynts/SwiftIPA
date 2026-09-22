@@ -42,6 +42,7 @@ enum ZSignEngine {
         removeUISupportedDevices: Bool,
         removeProvisionAfterSigning: Bool,
         weakInject: Bool,
+        injectIntoExtensions: Bool,
         forceSign: Bool
     ) throws -> ZSignOutcome {
         guard isAvailable else { throw ZSignEngineError.engineUnavailable }
@@ -63,6 +64,7 @@ enum ZSignEngine {
         options.removeUISupportedDevices = removeUISupportedDevices
         options.removeProvisionAfterSigning = removeProvisionAfterSigning
         options.weakInject = weakInject
+        options.injectIntoExtensions = injectIntoExtensions
         options.forceSign = forceSign
         options.adhoc = false
 

@@ -10,6 +10,8 @@ struct LibraryView: View {
     @State private var isSelecting = false
     @State private var showingBatchSheet = false
     @State private var importError: String?
+    @State private var isImporting = false
+    @State private var importingCount = 0
 
     private var filteredApps: [AppEntry] {
         guard !searchText.isEmpty else { return library.apps }
@@ -21,7 +23,7 @@ struct LibraryView: View {
 
     var body: some View {
         Group {
-            if library.apps.isEmpty {
+            if library.apps.isEmpty && !isImporting {
                 emptyState
             } else {
                 List {
@@ -42,6 +44,11 @@ struct LibraryView: View {
                 }
                 .listStyle(.plain)
                 .searchable(text: $searchText, prompt: Text("Search your library"))
+            }
+        }
+        .overlay {
+            if isImporting {
+                importingOverlay
             }
         }
         .siScreen()
@@ -77,6 +84,7 @@ struct LibraryView: View {
                     } label: {
                         Image(systemName: "plus")
                     }
+                    .disabled(isImporting)
                 }
             }
         }
@@ -119,6 +127,20 @@ struct LibraryView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    private var importingOverlay: some View {
+        VStack(spacing: SISpacing.md) {
+            ProgressView()
+                .tint(SIColor.accent)
+            Text(importingCount > 1 ? String(localized: "Importing \(importingCount) apps…") : String(localized: "Importing…"))
+                .font(SIFont.headline)
+                .foregroundStyle(SIColor.textPrimary)
+        }
+        .padding(SISpacing.lg)
+        .background(SIColor.surface)
+        .clipShape(RoundedRectangle(cornerRadius: SIRadius.md, style: .continuous))
+        .shadow(radius: 12)
+    }
+
     private func toggleSelection(_ entry: AppEntry) {
         if selection.contains(entry.id) {
             selection.remove(entry.id)
@@ -136,11 +158,21 @@ struct LibraryView: View {
     private func handleImport(_ result: Result<[URL], Error>) {
         switch result {
         case .success(let urls):
-            for url in urls {
-                do {
-                    _ = try library.importIPA(at: url)
-                } catch {
-                    importError = error.localizedDescription
+            guard !urls.isEmpty else { return }
+            importingCount = urls.count
+            isImporting = true
+            Task {
+                var firstError: String?
+                for url in urls {
+                    do {
+                        _ = try await library.importIPA(at: url)
+                    } catch {
+                        if firstError == nil { firstError = error.localizedDescription }
+                    }
+                }
+                await MainActor.run {
+                    isImporting = false
+                    importError = firstError
                 }
             }
         case .failure(let error):
