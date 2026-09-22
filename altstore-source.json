@@ -1,0 +1,34 @@
+{
+  "name": "SwiftIPA",
+  "identifier": "com.xsxs18.swiftipa.altstore-source",
+  "sourceURL": "https://raw.githubusercontent.com/xsxs18-dev/SwiftIPA/main/altstore-source.json",
+  "website": "https://github.com/xsxs18-dev/SwiftIPA",
+  "apps": [
+    {
+      "name": "SwiftIPA",
+      "bundleIdentifier": "com.xsxs18.SwiftIPA",
+      "developerName": "xsxs18",
+      "subtitle": "Sign IPAs, fast",
+      "localizedDescription": "SwiftIPA is a local, on-device IPA signer for iOS built around zsign compiled straight into the app. Bundle ID, name, version, entitlements, tweaks, modifiers — sign it all in seconds, resign the same app instantly from its own cache, or sign a whole batch of apps in parallel across every core on your device. No account, no server, no analytics.",
+      "iconURL": "https://raw.githubusercontent.com/xsxs18-dev/SwiftIPA/main/SwiftIPA/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png",
+      "tintColor": "#FF9F0A",
+      "category": "utilities",
+      "version": "1.0.0",
+      "versionDate": "2026-09-22",
+      "versionDescription": "Initial release.",
+      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/latest/download/SwiftIPA-unsigned.ipa",
+      "size": 0,
+      "minOSVersion": "16.0",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "date": "2026-09-22",
+          "localizedDescription": "Initial release.",
+          "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/latest/download/SwiftIPA-unsigned.ipa",
+          "size": 0,
+          "minOSVersion": "16.0"
+        }
+      ]
+    }
+  ]
+}

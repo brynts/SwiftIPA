@@ -1,0 +1,123 @@
+name: SwiftIPA
+options:
+  bundleIdPrefix: com.xsxs18
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+  developmentLanguage: en
+packages:
+  ZIPFoundation:
+    url: https://github.com/weichsel/ZIPFoundation.git
+    from: 0.9.19
+  OpenSSL:
+    url: https://github.com/krzyzanowskim/OpenSSL.git
+    from: 3.3.2000
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+    CLANG_CXX_LANGUAGE_STANDARD: "c++17"
+    CLANG_CXX_LIBRARY: "libc++"
+targets:
+  SwiftIPA:
+    type: application
+    platform: iOS
+    sources:
+      - path: SwiftIPA
+      - path: Vendor/zsign/src
+        optional: true
+        excludes:
+          - "**/zsign.cpp"
+          - "**/archive.cpp"
+          - "**/archive.h"
+          - "**/certcheck.cpp"
+          - "**/certcheck.h"
+          - "**/metadata.cpp"
+          - "**/metadata.h"
+          - "third-party/**"
+          - "**/common_win32.h"
+    info:
+      path: SwiftIPA/Resources/Info.plist
+      properties:
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+        CFBundleVersion: "0"
+        CFBundleShortVersionString: "1.0.0"
+        CFBundleLocalizations:
+          - en
+          - de
+        NSLocalNetworkUsageDescription: "SwiftIPA runs a local server on your device so iOS can install the app you just signed."
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+        CFBundleURLTypes:
+          - CFBundleURLName: com.xsxs18.SwiftIPA
+            CFBundleURLSchemes:
+              - swiftipa
+        UTImportedTypeDeclarations:
+          - UTTypeIdentifier: com.apple.itunes.ipa
+            UTTypeDescription: iOS App Archive
+            UTTypeConformsTo:
+              - public.data
+              - public.archive
+            UTTypeTagSpecification:
+              public.filename-extension:
+                - ipa
+        UIBackgroundModes:
+          - fetch
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.xsxs18.SwiftIPA
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SWIFT_OBJC_BRIDGING_HEADER: SwiftIPA/Signing/ZSign/SwiftIPA-Bridging-Header.h
+        HEADER_SEARCH_PATHS:
+          - $(inherited)
+          - $(SRCROOT)/Vendor/zsign/src
+          - $(SRCROOT)/Vendor/zsign/src/common
+          - $(SRCROOT)/Vendor/openssl-include
+        GCC_PREPROCESSOR_DEFINITIONS:
+          - $(inherited)
+          - SWIFTIPA_HAS_ZSIGN=1
+    dependencies:
+      - target: ShareExtension
+        embed: true
+      - package: ZIPFoundation
+      - package: OpenSSL
+      - sdk: libz.tbd
+
+  ShareExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: SwiftIPA/Services/ThemeManager.swift
+      - path: SwiftIPA/DesignSystem/Theme.swift
+      - path: SwiftIPA/DesignSystem/SITheme.swift
+      - path: SwiftIPA/Shared/InboxStore.swift
+      - path: ShareExtension
+    info:
+      path: ShareExtension/Info.plist
+      properties:
+        CFBundleDisplayName: SwiftIPA
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.share-services
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShareViewController
+          NSExtensionAttributes:
+            NSExtensionActivationRule: TRUEPREDICATE
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.xsxs18.SwiftIPA.ShareExtension
+        TARGETED_DEVICE_FAMILY: "1,2"
+schemes:
+  SwiftIPA:
+    build:
+      targets:
+        SwiftIPA: all
+        ShareExtension: all
+    run:
+      config: Debug

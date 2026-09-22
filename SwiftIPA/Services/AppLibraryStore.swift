@@ -1,0 +1,115 @@
+import Foundation
+import Combine
+
+final class AppLibraryStore: ObservableObject {
+    static let shared = AppLibraryStore()
+
+    @Published private(set) var apps: [AppEntry] = []
+
+    let folder: URL
+    private let indexURL: URL
+
+    private init() {
+        let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        folder = documents.appendingPathComponent("Library", isDirectory: true)
+        indexURL = documents.appendingPathComponent("library-index.json")
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        apps = load()
+    }
+
+    func ipaURL(for entry: AppEntry) -> URL {
+        folder.appendingPathComponent(entry.fileName)
+    }
+
+    func iconURL(for entry: AppEntry) -> URL? {
+        guard let name = entry.iconFileName else { return nil }
+        return folder.appendingPathComponent(name)
+    }
+
+    @discardableResult
+    func importIPA(at sourceURL: URL, sourceName: String? = nil) throws -> AppEntry {
+        let fileManager = FileManager.default
+        let needsAccess = sourceURL.startAccessingSecurityScopedResource()
+        defer { if needsAccess { sourceURL.stopAccessingSecurityScopedResource() } }
+
+        let id = UUID()
+        let fileName = "\(id.uuidString).ipa"
+        let destination = folder.appendingPathComponent(fileName)
+        try fileManager.copyItem(at: sourceURL, to: destination)
+
+        let extracted = try IPAService.extract(ipaURL: destination)
+        defer { extracted.cleanUp() }
+        let metadata = try IPAService.metadata(from: extracted)
+
+        var iconFileName: String?
+        if let iconData = IPAService.extractIcon(from: extracted) {
+            let name = "\(id.uuidString)-icon.png"
+            try? iconData.write(to: folder.appendingPathComponent(name))
+            iconFileName = name
+        }
+
+        let size = (try? fileManager.attributesOfItem(atPath: destination.path)[.size] as? Int64) ?? 0
+
+        let entry = AppEntry(
+            id: id,
+            name: metadata.name,
+            bundleIdentifier: metadata.bundleIdentifier,
+            version: metadata.version,
+            build: metadata.build,
+            minimumOSVersion: metadata.minimumOSVersion,
+            fileName: fileName,
+            iconFileName: iconFileName,
+            byteSize: size,
+            originalBundleIdentifier: metadata.bundleIdentifier,
+            sourceName: sourceName
+        )
+        apps.insert(entry, at: 0)
+        persist()
+        return entry
+    }
+
+    func markSigned(_ entryID: UUID, signedIPAURL: URL, options: SigningOptions, certificateID: UUID) throws {
+        guard let index = apps.firstIndex(where: { $0.id == entryID }) else { return }
+        let entry = apps[index]
+        let destination = ipaURL(for: entry)
+        if FileManager.default.fileExists(atPath: destination.path) {
+            try FileManager.default.removeItem(at: destination)
+        }
+        try FileManager.default.copyItem(at: signedIPAURL, to: destination)
+
+        let size = (try? FileManager.default.attributesOfItem(atPath: destination.path)[.size] as? Int64) ?? 0
+        apps[index].byteSize = size
+        apps[index].signedAt = Date()
+        apps[index].certificateID = certificateID
+        apps[index].bundleIdentifier = options.resolvedBundleIdentifier(original: apps[index].originalBundleIdentifier ?? apps[index].bundleIdentifier)
+        if !options.displayName.isEmpty { apps[index].name = options.displayName }
+        if !options.version.isEmpty { apps[index].version = options.version }
+        if !options.build.isEmpty { apps[index].build = options.build }
+        persist()
+    }
+
+    func remove(_ entry: AppEntry) {
+        try? FileManager.default.removeItem(at: ipaURL(for: entry))
+        if let iconURL = iconURL(for: entry) {
+            try? FileManager.default.removeItem(at: iconURL)
+        }
+        apps.removeAll { $0.id == entry.id }
+        persist()
+    }
+
+    func rename(_ entry: AppEntry, to newName: String) {
+        guard let index = apps.firstIndex(where: { $0.id == entry.id }) else { return }
+        apps[index].name = newName
+        persist()
+    }
+
+    private func load() -> [AppEntry] {
+        guard let data = try? Data(contentsOf: indexURL) else { return [] }
+        return (try? JSONDecoder().decode([AppEntry].self, from: data)) ?? []
+    }
+
+    private func persist() {
+        guard let data = try? JSONEncoder().encode(apps) else { return }
+        try? data.write(to: indexURL, options: .atomic)
+    }
+}

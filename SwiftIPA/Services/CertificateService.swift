@@ -1,0 +1,125 @@
+import Foundation
+import Security
+
+struct ProvisioningProfileInfo {
+    var name: String
+    var teamName: String?
+    var teamIdentifier: String?
+    var applicationIdentifierPrefix: String?
+    var creationDate: Date?
+    var expirationDate: Date?
+    var deviceCount: Int?
+    var entitlements: [String: Any]
+    var supportsUnrestrictedEntitlements: Bool
+}
+
+struct P12Info {
+    var subjectCommonName: String?
+    var expirationDate: Date?
+    var issuedDate: Date?
+}
+
+enum CertificateServiceError: LocalizedError {
+    case cannotReadProfile
+    case wrongPassword
+    case cannotReadP12
+
+    var errorDescription: String? {
+        switch self {
+        case .cannotReadProfile:
+            return String(localized: "Couldn't read this provisioning profile.")
+        case .wrongPassword:
+            return String(localized: "That password doesn't unlock this .p12 file.")
+        case .cannotReadP12:
+            return String(localized: "Couldn't read this .p12 certificate file.")
+        }
+    }
+}
+
+enum CertificateService {
+    static func inspectProvisioningProfile(at url: URL) throws -> ProvisioningProfileInfo {
+        let raw = try Data(contentsOf: url)
+
+        var decoder: CMSDecoder?
+        CMSDecoderCreate(&decoder)
+        guard let decoder else { throw CertificateServiceError.cannotReadProfile }
+
+        let status = raw.withUnsafeBytes { buffer -> OSStatus in
+            guard let base = buffer.bindMemory(to: UInt8.self).baseAddress else { return errSecParam }
+            return CMSDecoderUpdateMessage(decoder, base, raw.count)
+        }
+        guard status == errSecSuccess else { throw CertificateServiceError.cannotReadProfile }
+        CMSDecoderFinalizeMessage(decoder)
+
+        var contentData: CFData?
+        CMSDecoderCopyContent(decoder, &contentData)
+        guard let contentData = contentData as Data? else { throw CertificateServiceError.cannotReadProfile }
+
+        guard let plist = try? PropertyListSerialization.propertyList(from: contentData, format: nil) as? [String: Any] else {
+            throw CertificateServiceError.cannotReadProfile
+        }
+
+        let entitlements = (plist["Entitlements"] as? [String: Any]) ?? [:]
+        let unrestricted = (entitlements["get-task-allow"] as? Bool) == true
+            || (entitlements["com.apple.private.security.no-container"] as? Bool) == true
+
+        return ProvisioningProfileInfo(
+            name: (plist["Name"] as? String) ?? url.deletingPathExtension().lastPathComponent,
+            teamName: plist["TeamName"] as? String,
+            teamIdentifier: (plist["TeamIdentifier"] as? [String])?.first,
+            applicationIdentifierPrefix: (plist["ApplicationIdentifierPrefix"] as? [String])?.first,
+            creationDate: plist["CreationDate"] as? Date,
+            expirationDate: plist["ExpirationDate"] as? Date,
+            deviceCount: (plist["ProvisionedDevices"] as? [String])?.count,
+            entitlements: entitlements,
+            supportsUnrestrictedEntitlements: unrestricted
+        )
+    }
+
+    static func inspectP12(at url: URL, password: String) throws -> P12Info {
+        let data = try Data(contentsOf: url)
+        let options: [String: Any] = [kSecImportExportPassphrase as String: password]
+        var rawItems: CFArray?
+        let status = SecPKCS12Import(data as CFData, options as CFDictionary, &rawItems)
+
+        guard status == errSecSuccess else {
+            if status == errSecAuthFailed || status == -25264 {
+                throw CertificateServiceError.wrongPassword
+            }
+            throw CertificateServiceError.cannotReadP12
+        }
+
+        guard let items = rawItems as? [[String: Any]], let first = items.first,
+              let identityValue = first[kSecImportItemIdentity as String],
+              CFGetTypeID(identityValue as CFTypeRef) == SecIdentityGetTypeID() else {
+            throw CertificateServiceError.cannotReadP12
+        }
+        let identity = identityValue as! SecIdentity
+
+        var certificate: SecCertificate?
+        SecIdentityCopyCertificate(identity, &certificate)
+        guard let certificate else { throw CertificateServiceError.cannotReadP12 }
+
+        var commonName: CFString?
+        SecCertificateCopyCommonName(certificate, &commonName)
+
+        let keys = [kSecOIDX509V1ValidityNotAfter, kSecOIDX509V1ValidityNotBefore] as CFArray
+        let values = SecCertificateCopyValues(certificate, keys, nil) as? [String: Any]
+
+        let notAfter = numericDate(values?[kSecOIDX509V1ValidityNotAfter as String])
+        let notBefore = numericDate(values?[kSecOIDX509V1ValidityNotBefore as String])
+
+        return P12Info(
+            subjectCommonName: commonName as String?,
+            expirationDate: notAfter,
+            issuedDate: notBefore
+        )
+    }
+
+    private static func numericDate(_ raw: Any?) -> Date? {
+        guard let dict = raw as? [String: Any], let seconds = dict[kSecPropertyKeyValue as String] as? Double else {
+            return nil
+        }
+        return Date(timeIntervalSinceReferenceDate: seconds)
+    }
+}

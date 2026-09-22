@@ -1,0 +1,141 @@
+name: Build IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Select latest available Xcode 16
+        run: |
+          XCODE_PATH=$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$XCODE_PATH" ]; then
+            XCODE_PATH=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
+          fi
+          echo "Using $XCODE_PATH"
+          sudo xcode-select -switch "$XCODE_PATH/Contents/Developer"
+          xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Fetch zsign (signing engine)
+        run: ./Scripts/fetch-dependencies.sh
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Set build number
+        run: /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ github.run_number }}" SwiftIPA/Resources/Info.plist
+
+      - name: Read app version
+        run: |
+          VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" SwiftIPA/Resources/Info.plist)
+          echo "APP_VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Resolve Swift packages
+        run: xcodebuild -resolvePackageDependencies -project SwiftIPA.xcodeproj -scheme SwiftIPA
+
+      - name: Build (unsigned, generic iOS device)
+        run: |
+          xcodebuild build \
+            -project SwiftIPA.xcodeproj \
+            -scheme SwiftIPA \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM=""
+
+      - name: Package IPA
+        run: |
+          set -e
+          APP_PATH="build/Build/Products/Release-iphoneos/SwiftIPA.app"
+          mkdir -p Payload
+          cp -R "$APP_PATH" Payload/
+          zip -qr SwiftIPA-unsigned.ipa Payload
+          rm -rf Payload
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SwiftIPA-unsigned-ipa
+          path: SwiftIPA-unsigned.ipa
+          retention-days: 14
+
+      - name: Write changelog
+        run: |
+          PREV_TAG=$(git tag -l 'build-*' --sort=-v:refname | head -1)
+          if [ -n "$PREV_TAG" ]; then
+            git log "$PREV_TAG"..HEAD --pretty=format:"- %s" --no-merges > changes.md
+          else
+            git log --pretty=format:"- %s" --no-merges > changes.md
+          fi
+          {
+            echo "Unsigned .ipa — sign it with SwiftIPA itself (or Sideloadly / AltStore) using your own certificate before installing."
+            echo ""
+            echo "### Changes"
+            cat changes.md
+          } > changelog.md
+
+      - name: Create release with the .ipa attached
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          TAG="build-${{ github.run_number }}"
+          gh release create "$TAG" SwiftIPA-unsigned.ipa \
+            --repo "${{ github.repository }}" \
+            --title "SwiftIPA ${{ env.APP_VERSION }} (build ${{ github.run_number }})" \
+            --notes-file changelog.md \
+            --latest
+
+      - name: Update AltStore source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          TAG="build-${{ github.run_number }}"
+          VERSION="${{ env.APP_VERSION }}"
+          DATE=$(date -u +"%Y-%m-%d")
+          SIZE=$(stat -f%z SwiftIPA-unsigned.ipa)
+          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${TAG}/SwiftIPA-unsigned.ipa"
+          NEW_VERSION=$(jq -n \
+            --arg version "$VERSION" \
+            --arg date "$DATE" \
+            --argjson size "$SIZE" \
+            --arg downloadURL "$DOWNLOAD_URL" \
+            --rawfile notes changes.md \
+            '{version: $version, date: $date, localizedDescription: $notes, downloadURL: $downloadURL, size: $size, minOSVersion: "16.0"}')
+          jq --argjson v "$NEW_VERSION" '
+            .apps[0].versions = [$v] + .apps[0].versions |
+            .apps[0].version = $v.version |
+            .apps[0].versionDate = $v.date |
+            .apps[0].versionDescription = $v.localizedDescription |
+            .apps[0].downloadURL = $v.downloadURL |
+            .apps[0].size = $v.size
+          ' altstore-source.json > altstore-source.tmp.json
+          mv altstore-source.tmp.json altstore-source.json
+          if git diff --quiet -- altstore-source.json; then
+            echo "No changes to altstore-source.json"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add altstore-source.json
+            git commit -m "Update AltStore source for build ${{ github.run_number }}"
+            git push origin HEAD:main
+          fi

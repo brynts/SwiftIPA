@@ -1,0 +1,198 @@
+import SwiftUI
+import UniformTypeIdentifiers
+
+struct LibraryView: View {
+    @ObservedObject private var library = AppLibraryStore.shared
+    @State private var searchText = ""
+    @State private var showingImporter = false
+    @State private var showingDownloadSheet = false
+    @State private var selection = Set<UUID>()
+    @State private var isSelecting = false
+    @State private var showingBatchSheet = false
+    @State private var importError: String?
+
+    private var filteredApps: [AppEntry] {
+        guard !searchText.isEmpty else { return library.apps }
+        return library.apps.filter {
+            $0.name.localizedCaseInsensitiveContains(searchText) ||
+            $0.bundleIdentifier.localizedCaseInsensitiveContains(searchText)
+        }
+    }
+
+    var body: some View {
+        Group {
+            if library.apps.isEmpty {
+                emptyState
+            } else {
+                List {
+                    ForEach(filteredApps) { entry in
+                        if isSelecting {
+                            Button {
+                                toggleSelection(entry)
+                            } label: {
+                                AppRow(entry: entry, isSelected: selection.contains(entry.id))
+                            }
+                        } else {
+                            NavigationLink(value: entry) {
+                                AppRow(entry: entry, isSelected: false)
+                            }
+                        }
+                    }
+                    .onDelete(perform: delete)
+                }
+                .listStyle(.plain)
+                .searchable(text: $searchText, prompt: Text("Search your library"))
+            }
+        }
+        .siScreen()
+        .navigationTitle("Library")
+        .navigationDestination(for: AppEntry.self) { entry in
+            AppDetailView(entryID: entry.id)
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                if !library.apps.isEmpty {
+                    Button(isSelecting ? "Done" : "Select") {
+                        isSelecting.toggle()
+                        selection.removeAll()
+                    }
+                }
+            }
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                if isSelecting {
+                    Button("Sign All") { showingBatchSheet = true }
+                        .disabled(selection.isEmpty)
+                } else {
+                    Menu {
+                        Button {
+                            showingImporter = true
+                        } label: {
+                            Label("Import IPA", systemImage: "square.and.arrow.down")
+                        }
+                        Button {
+                            showingDownloadSheet = true
+                        } label: {
+                            Label("Download from URL", systemImage: "link")
+                        }
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
+        }
+        .fileImporter(isPresented: $showingImporter, allowedContentTypes: [.init(filenameExtension: "ipa") ?? .data], allowsMultipleSelection: true) { result in
+            handleImport(result)
+        }
+        .sheet(isPresented: $showingDownloadSheet) {
+            DownloadByURLSheet()
+        }
+        .sheet(isPresented: $showingBatchSheet) {
+            BatchQueueView(entryIDs: Array(selection))
+                .onDisappear {
+                    isSelecting = false
+                    selection.removeAll()
+                }
+        }
+        .alert("Import Failed", isPresented: Binding(get: { importError != nil }, set: { if !$0 { importError = nil } })) {
+            Button("OK") { importError = nil }
+        } message: {
+            Text(importError ?? "")
+        }
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: SISpacing.md) {
+            Image(systemName: "bolt.horizontal.fill")
+                .font(.system(size: 48))
+                .foregroundStyle(SIColor.accent)
+            Text("Your library is empty")
+                .font(SIFont.headline)
+                .foregroundStyle(SIColor.textPrimary)
+            Text("Import an IPA, download one from a source, or share one in from another app.")
+                .font(SIFont.body)
+                .foregroundStyle(SIColor.textSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, SISpacing.xl)
+            Button("Import IPA") { showingImporter = true }
+                .buttonStyle(.siPrimary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func toggleSelection(_ entry: AppEntry) {
+        if selection.contains(entry.id) {
+            selection.remove(entry.id)
+        } else {
+            selection.insert(entry.id)
+        }
+    }
+
+    private func delete(at offsets: IndexSet) {
+        for index in offsets {
+            library.remove(filteredApps[index])
+        }
+    }
+
+    private func handleImport(_ result: Result<[URL], Error>) {
+        switch result {
+        case .success(let urls):
+            for url in urls {
+                do {
+                    _ = try library.importIPA(at: url)
+                } catch {
+                    importError = error.localizedDescription
+                }
+            }
+        case .failure(let error):
+            importError = error.localizedDescription
+        }
+    }
+}
+
+struct AppRow: View {
+    let entry: AppEntry
+    let isSelected: Bool
+
+    var body: some View {
+        HStack(spacing: SISpacing.md) {
+            if isSelected {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(SIColor.accent)
+            }
+
+            iconView
+                .frame(width: 48, height: 48)
+                .clipShape(RoundedRectangle(cornerRadius: SIRadius.sm, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(entry.name)
+                    .font(SIFont.headline)
+                    .foregroundStyle(SIColor.textPrimary)
+                Text("\(entry.bundleIdentifier) · \(entry.displayVersion)")
+                    .font(SIFont.caption)
+                    .foregroundStyle(SIColor.textSecondary)
+                    .lineLimit(1)
+            }
+
+            Spacer()
+
+            if entry.isSigned {
+                StatusBadge(text: String(localized: "Signed"), color: SIColor.success)
+            } else {
+                StatusBadge(text: String(localized: "Unsigned"), color: SIColor.textSecondary)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    @ViewBuilder
+    private var iconView: some View {
+        if let iconURL = AppLibraryStore.shared.iconURL(for: entry), let uiImage = UIImage(contentsOfFile: iconURL.path) {
+            Image(uiImage: uiImage).resizable().scaledToFill()
+        } else {
+            RoundedRectangle(cornerRadius: SIRadius.sm, style: .continuous)
+                .fill(SIColor.surfaceElevated)
+                .overlay(Image(systemName: "app.dashed").foregroundStyle(SIColor.textSecondary))
+        }
+    }
+}
