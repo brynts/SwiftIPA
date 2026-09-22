@@ -15,11 +15,19 @@
       "category": "utilities",
       "version": "1.0.0",
       "versionDate": "2026-09-22",
-      "versionDescription": "- Update AltStore source for build 6",
-      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-7/SwiftIPA-unsigned.ipa",
-      "size": 3038263,
+      "versionDescription": "- Fix file pickers not confirming selection: UTType(filenameExtension:) synthesized a dynamic UTI that didn't match the real file's type, silently blocking Open. Use broad, always-matching types instead across all pickers.\n- Update AltStore source for build 7",
+      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-8/SwiftIPA-unsigned.ipa",
+      "size": 3036585,
       "minOSVersion": "16.0",
       "versions": [
+        {
+          "version": "1.0.0",
+          "date": "2026-09-22",
+          "localizedDescription": "- Fix file pickers not confirming selection: UTType(filenameExtension:) synthesized a dynamic UTI that didn't match the real file's type, silently blocking Open. Use broad, always-matching types instead across all pickers.\n- Update AltStore source for build 7",
+          "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-8/SwiftIPA-unsigned.ipa",
+          "size": 3036585,
+          "minOSVersion": "16.0"
+        },
         {
           "version": "1.0.0",
           "date": "2026-09-22",
