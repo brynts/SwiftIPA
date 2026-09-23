@@ -48,38 +48,34 @@ struct InstallProgressView: View {
                         }
                     }
                     .transition(.opacity.combined(with: .scale(scale: 0.95)))
-                } else if let installLink {
+                } else if isUsingFallback, let installLink {
                     Group {
                         Image(systemName: "wifi")
                             .font(.system(size: 40))
                             .foregroundStyle(SIColor.accent)
                         Text("Ready to install.")
                             .font(SIFont.headline)
-                        if isUsingFallback {
-                            trustSteps
-                        } else {
-                            Text("No certificate, no profile — this uses a small public relay just to hand iOS a properly hosted install manifest. Your IPA itself never leaves your device.")
-                                .font(SIFont.caption)
-                                .foregroundStyle(SIColor.textSecondary)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, SISpacing.xl)
-                        }
+                        trustSteps
                         Button("Install Now") {
-                            switch installLink.presentationStyle {
-                            case .direct:
-                                UIApplication.shared.open(installLink.url)
-                            case .webView:
-                                backgroundLoadURL = installLink.url
-                            }
+                            UIApplication.shared.open(installLink.url)
                         }
                         .buttonStyle(.siPrimaryWide)
                         .padding(.horizontal, SISpacing.xl)
-                        if isUsingFallback {
-                            Button("Try Without a Certificate Instead") {
-                                Task { await startServer(useFallback: false, useLoopback: false) }
-                            }
-                            .buttonStyle(.siSecondary)
+                        Button("Try Without a Certificate Instead") {
+                            Task { await startServer(useFallback: false, useLoopback: false) }
                         }
+                        .buttonStyle(.siSecondary)
+                    }
+                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                } else if installLink != nil {
+                    Group {
+                        ProgressView()
+                        Text("Opening install…")
+                            .font(SIFont.headline)
+                        Button("Didn't Work? Try the Certificate Method") {
+                            Task { await startServer(useFallback: true, useLoopback: false) }
+                        }
+                        .buttonStyle(.siSecondary)
                     }
                     .transition(.opacity.combined(with: .scale(scale: 0.95)))
                 }
@@ -168,6 +164,14 @@ struct InstallProgressView: View {
             await MainActor.run {
                 installLink = link
                 isPreparing = false
+                if !useFallback {
+                    switch link.presentationStyle {
+                    case .direct:
+                        UIApplication.shared.open(link.url)
+                    case .webView:
+                        backgroundLoadURL = link.url
+                    }
+                }
             }
         } catch {
             await MainActor.run {

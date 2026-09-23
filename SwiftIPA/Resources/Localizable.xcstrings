@@ -2750,6 +2750,26 @@
           }
         }
       }
+    },
+    "Opening install…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installation wird geöffnet…"
+          }
+        }
+      }
+    },
+    "Didn't Work? Try the Certificate Method": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hat nicht geklappt? Zertifikat-Methode versuchen"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

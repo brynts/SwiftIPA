@@ -60,6 +60,8 @@ enum IPAService {
             throw IPAServiceError.extractionFailed
         }
 
+        makeWritable(at: root)
+
         let payload = root.appendingPathComponent("Payload", isDirectory: true)
         guard let appFolder = try? fileManager.contentsOfDirectory(at: payload, includingPropertiesForKeys: nil)
             .first(where: { $0.pathExtension == "app" }) else {
@@ -74,6 +76,15 @@ enum IPAService {
         }
 
         return ExtractedApp(extractionRoot: root, payloadFolder: payload, appFolder: appFolder, infoPlistURL: infoPlist)
+    }
+
+    private static func makeWritable(at root: URL) {
+        let fileManager = FileManager.default
+        guard let enumerator = fileManager.enumerator(at: root, includingPropertiesForKeys: [.isRegularFileKey]) else { return }
+        for case let url as URL in enumerator {
+            guard (try? url.resourceValues(forKeys: [.isRegularFileKey]))?.isRegularFile == true else { continue }
+            try? fileManager.setAttributes([.posixPermissions: 0o755], ofItemAtPath: url.path)
+        }
     }
 
     static func metadata(from extracted: ExtractedApp) throws -> AppMetadata {
