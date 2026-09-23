@@ -38,12 +38,12 @@ struct SourcesView: View {
                     SourceRow(source: source)
                 }
             }
-            .listRowInsets(EdgeInsets(top: SISpacing.xs, leading: SISpacing.md, bottom: SISpacing.xs, trailing: SISpacing.md))
-            .listRowBackground(Color.clear)
-            .listRowSeparator(.hidden)
             .onDelete { offsets in
                 for index in offsets { sourceStore.removeSource(sourceStore.sources[index]) }
             }
+            .listRowInsets(EdgeInsets(top: SISpacing.xs, leading: SISpacing.md, bottom: SISpacing.xs, trailing: SISpacing.md))
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
         }
         .listStyle(.plain)
     }

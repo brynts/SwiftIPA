@@ -96,10 +96,10 @@ struct LibraryView: View {
             ForEach(filteredApps) { entry in
                 libraryRow(for: entry)
             }
+            .onDelete(perform: delete)
             .listRowInsets(EdgeInsets(top: SISpacing.xs, leading: SISpacing.md, bottom: SISpacing.xs, trailing: SISpacing.md))
             .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
-            .onDelete(perform: delete)
         }
         .listStyle(.plain)
         .searchable(text: $searchText, prompt: Text("Search your library"))

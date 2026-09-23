@@ -38,12 +38,12 @@ struct CertificatesView: View {
                     CertificateRow(certificate: certificate, isDefault: certificate.id == certificateStore.defaultCertificateID)
                 }
             }
-            .listRowInsets(EdgeInsets(top: SISpacing.xs, leading: SISpacing.md, bottom: SISpacing.xs, trailing: SISpacing.md))
-            .listRowBackground(Color.clear)
-            .listRowSeparator(.hidden)
             .onDelete { offsets in
                 for index in offsets { certificateStore.removeCertificate(certificateStore.certificates[index]) }
             }
+            .listRowInsets(EdgeInsets(top: SISpacing.xs, leading: SISpacing.md, bottom: SISpacing.xs, trailing: SISpacing.md))
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
         }
         .listStyle(.plain)
     }
