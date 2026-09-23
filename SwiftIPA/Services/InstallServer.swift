@@ -24,29 +24,50 @@ final class InstallServer {
     private var appName = ""
     private var bundleIdentifier = ""
     private var version = ""
+    private var scheme = "http"
+    private var host = "127.0.0.1"
+    private var port: UInt16 = 8442
     private let queue = DispatchQueue(label: "com.xsxs18.SwiftIPA.InstallServer")
 
     private init() {}
 
-    func startInstall(ipaURL: URL, appName: String, bundleIdentifier: String, version: String) async throws -> URL {
+    func startInstall(
+        ipaURL: URL,
+        appName: String,
+        bundleIdentifier: String,
+        version: String,
+        useSecureConnection: Bool = false,
+        useLocalNetworkAddress: Bool = false
+    ) async throws -> URL {
         stop()
-
-        let (identity, _, _) = try LocalServerIdentity.ensureIdentity()
-        guard let secIdentity = sec_identity_create(identity) else { throw InstallServerError.noIdentity }
-        guard let address = Self.wifiIPAddress() else { throw InstallServerError.noAddress }
 
         self.ipaURL = ipaURL
         self.appName = appName
         self.bundleIdentifier = bundleIdentifier
         self.version = version
+        self.scheme = useSecureConnection ? "https" : "http"
+        self.port = useSecureConnection ? 8443 : 8442
 
-        let tlsOptions = NWProtocolTLS.Options()
-        sec_protocol_options_set_local_identity(tlsOptions.securityProtocolOptions, secIdentity)
+        if useLocalNetworkAddress {
+            guard let address = Self.wifiIPAddress() else { throw InstallServerError.noAddress }
+            self.host = address
+        } else {
+            self.host = "127.0.0.1"
+        }
 
-        let parameters = NWParameters(tls: tlsOptions, tcp: NWProtocolTCP.Options())
+        let parameters: NWParameters
+        if useSecureConnection {
+            let (identity, _, _) = try LocalServerIdentity.ensureIdentity()
+            guard let secIdentity = sec_identity_create(identity) else { throw InstallServerError.noIdentity }
+            let tlsOptions = NWProtocolTLS.Options()
+            sec_protocol_options_set_local_identity(tlsOptions.securityProtocolOptions, secIdentity)
+            parameters = NWParameters(tls: tlsOptions, tcp: NWProtocolTCP.Options())
+        } else {
+            parameters = NWParameters.tcp
+        }
         parameters.allowLocalEndpointReuse = true
 
-        let newListener = try NWListener(using: parameters, on: 8443)
+        let newListener = try NWListener(using: parameters, on: NWEndpoint.Port(rawValue: port)!)
         listener = newListener
 
         newListener.newConnectionHandler = { [weak self] connection in
@@ -57,7 +78,8 @@ final class InstallServer {
         var didResume = false
 
         return try await withCheckedThrowingContinuation { continuation in
-            newListener.stateUpdateHandler = { state in
+            newListener.stateUpdateHandler = { [weak self] state in
+                guard let self else { return }
                 hasResumed.lock()
                 let alreadyResumed = didResume
                 if !alreadyResumed { didResume = true }
@@ -66,7 +88,7 @@ final class InstallServer {
 
                 switch state {
                 case .ready:
-                    let manifestURL = "https://\(address):8443/manifest.plist"
+                    let manifestURL = "\(self.scheme)://\(self.host):\(self.port)/manifest.plist"
                     let itms = "itms-services://?action=download-manifest&url=\(manifestURL.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? manifestURL)"
                     continuation.resume(returning: URL(string: itms)!)
                 case .failed(let error):
@@ -134,7 +156,7 @@ final class InstallServer {
                     "assets": [
                         [
                             "kind": "software-package",
-                            "url": "https://\(Self.wifiIPAddress() ?? "127.0.0.1"):8443/app.ipa"
+                            "url": "\(scheme)://\(host):\(port)/app.ipa"
                         ]
                     ],
                     "metadata": [

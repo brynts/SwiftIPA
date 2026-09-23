@@ -531,6 +531,16 @@
         }
       }
     },
+    "Didn't Work? Try Wi-Fi Method": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hat nicht geklappt? WLAN-Methode versuchen"
+          }
+        }
+      }
+    },
     "Disable Liquid Glass": {
       "localizations": {
         "de": {
@@ -1531,6 +1541,16 @@
         }
       }
     },
+    "Ready to install.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bereit zur Installation."
+          }
+        }
+      }
+    },
     "Red & Black": {
       "localizations": {
         "de": {
@@ -2177,6 +2197,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Erneut versuchen"
+          }
+        }
+      }
+    },
+    "Try the Wi-Fi Method Instead": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stattdessen WLAN-Methode versuchen"
           }
         }
       }

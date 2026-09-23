@@ -7,7 +7,7 @@ struct InstallProgressView: View {
     @State private var errorMessage: String?
     @State private var isPreparing = true
     @State private var showingTrustSheet = false
-    @State private var hasTrustedCertificate = UserDefaults.standard.bool(forKey: "SwiftIPA.hasTrustedLocalCertificate")
+    @State private var isUsingFallback = false
 
     @Environment(\.dismiss) private var dismiss
 
@@ -27,38 +27,34 @@ struct InstallProgressView: View {
                     Text(errorMessage)
                         .multilineTextAlignment(.center)
                         .foregroundStyle(SIColor.textSecondary)
-                    trustSteps
-                } else if !hasTrustedCertificate {
-                    Image(systemName: "lock.shield.fill")
-                        .font(.system(size: 40))
-                        .foregroundStyle(SIColor.accent)
-                    Text("One-time setup")
-                        .font(SIFont.headline)
-                    Text("Before your first direct install, iOS needs to trust SwiftIPA's local certificate. Do this once — every install after is a single tap.")
-                        .font(SIFont.caption)
-                        .foregroundStyle(SIColor.textSecondary)
-                        .multilineTextAlignment(.center)
                         .padding(.horizontal, SISpacing.xl)
-                    trustSteps
-                    Button("I've Trusted It — Continue") {
-                        hasTrustedCertificate = true
-                        UserDefaults.standard.set(true, forKey: "SwiftIPA.hasTrustedLocalCertificate")
+                    if !isUsingFallback {
+                        Button("Try the Wi-Fi Method Instead") {
+                            Task { await startServer(useFallback: true) }
+                        }
+                        .buttonStyle(.siPrimaryWide)
+                        .padding(.horizontal, SISpacing.xl)
                     }
-                    .buttonStyle(.siPrimaryWide)
-                    .padding(.horizontal, SISpacing.xl)
                 } else if let installURL {
                     Image(systemName: "wifi")
                         .font(.system(size: 40))
                         .foregroundStyle(SIColor.accent)
-                    Text("Ready to install over your local network.")
+                    Text("Ready to install.")
                         .font(SIFont.headline)
+                    if isUsingFallback {
+                        trustSteps
+                    }
                     Button("Install Now") {
                         UIApplication.shared.open(installURL)
                     }
                     .buttonStyle(.siPrimaryWide)
                     .padding(.horizontal, SISpacing.xl)
-                    Button("Trust Certificate Again") { showingTrustSheet = true }
+                    if !isUsingFallback {
+                        Button("Didn't Work? Try Wi-Fi Method") {
+                            Task { await startServer(useFallback: true) }
+                        }
                         .buttonStyle(.siSecondary)
+                    }
                 }
             }
             .padding()
@@ -79,7 +75,7 @@ struct InstallProgressView: View {
                 }
             }
             .task {
-                await startServer()
+                await startServer(useFallback: false)
             }
         }
     }
@@ -112,14 +108,22 @@ struct InstallProgressView: View {
         }
     }
 
-    private func startServer() async {
+    private func startServer(useFallback: Bool) async {
         guard let entry else { return }
+        await MainActor.run {
+            isPreparing = true
+            errorMessage = nil
+            installURL = nil
+            isUsingFallback = useFallback
+        }
         do {
             let url = try await InstallServer.shared.startInstall(
                 ipaURL: AppLibraryStore.shared.ipaURL(for: entry),
                 appName: entry.name,
                 bundleIdentifier: entry.bundleIdentifier,
-                version: entry.displayVersion
+                version: entry.displayVersion,
+                useSecureConnection: useFallback,
+                useLocalNetworkAddress: useFallback
             )
             await MainActor.run {
                 installURL = url
