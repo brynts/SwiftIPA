@@ -29,7 +29,16 @@ struct ChangelogEntry: Decodable, Identifiable {
         guard let name, name.hasPrefix("SwiftIPA ") else {
             return name ?? tag_name
         }
-        return String(name.dropFirst("SwiftIPA ".count))
+        let remainder = name.dropFirst("SwiftIPA ".count)
+        if let spaceIndex = remainder.firstIndex(of: " ") {
+            return String(remainder[..<spaceIndex])
+        }
+        return String(remainder)
+    }
+
+    var displayBuild: String? {
+        guard let name, let openParen = name.firstIndex(of: "("), let closeParen = name.lastIndex(of: ")") else { return nil }
+        return String(name[name.index(after: openParen)..<closeParen])
     }
 
     var displayChanges: String {

@@ -64,7 +64,7 @@ struct AppDetailView: View {
                     Button {
                         showingInstall = true
                     } label: {
-                        Label("Try Install on This Device", systemImage: "arrow.down.circle.fill")
+                        Label("Install", systemImage: "arrow.down.circle.fill")
                     }
                 }
 

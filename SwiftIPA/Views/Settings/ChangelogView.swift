@@ -20,7 +20,12 @@ struct ChangelogView: View {
                 List(entries) { entry in
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
-                            Text(entry.displayVersion).font(SIFont.headline)
+                            HStack(spacing: 6) {
+                                Text(entry.displayVersion).font(SIFont.headline)
+                                if let build = entry.displayBuild {
+                                    Text(build).font(SIFont.caption).foregroundStyle(SIColor.textSecondary)
+                                }
+                            }
                             Spacer()
                             if let date = entry.displayDate {
                                 Text(date).font(SIFont.caption).foregroundStyle(SIColor.textSecondary)

@@ -9,7 +9,7 @@ struct InstallProgressView: View {
     @State private var showingTrustSheet = false
     @State private var isUsingFallback = false
     @State private var isUsingLoopback = false
-    @State private var showingSafari = false
+    @State private var backgroundLoadURL: URL?
 
     @Environment(\.dismiss) private var dismiss
 
@@ -64,7 +64,7 @@ struct InstallProgressView: View {
                         case .direct:
                             UIApplication.shared.open(installLink.url)
                         case .webView:
-                            showingSafari = true
+                            backgroundLoadURL = installLink.url
                         }
                     }
                     .buttonStyle(.siPrimaryWide)
@@ -94,10 +94,12 @@ struct InstallProgressView: View {
                     ShareSheet(items: [certURL])
                 }
             }
-            .fullScreenCover(isPresented: $showingSafari) {
-                if let installLink {
-                    SafariView(url: installLink.url)
-                        .ignoresSafeArea()
+            .background {
+                if let backgroundLoadURL {
+                    HiddenInstallWebView(url: backgroundLoadURL)
+                        .frame(width: 1, height: 1)
+                        .opacity(0.01)
+                        .allowsHitTesting(false)
                 }
             }
             .task {

@@ -59,7 +59,21 @@ struct RepositoryPayload: Decodable {
         iconURL = primaryIcon ?? altIcon ?? legacyIcon ?? plainIcon
         headerURL = try container.decodeIfPresent(URL.self, forKey: .headerURL)
         website = try container.decodeIfPresent(URL.self, forKey: .website)
-        apps = (try? container.decode([RepositoryApp].self, forKey: .apps)) ?? []
+        apps = Self.decodeApps(from: container)
+    }
+
+    private static func decodeApps(from container: KeyedDecodingContainer<CodingKeys>) -> [RepositoryApp] {
+        guard var unkeyedContainer = try? container.nestedUnkeyedContainer(forKey: .apps) else { return [] }
+        var apps: [RepositoryApp] = []
+        let entryCount = unkeyedContainer.count ?? 0
+        var iterations = 0
+        while !unkeyedContainer.isAtEnd && iterations < entryCount {
+            iterations += 1
+            if let app = try? unkeyedContainer.decode(RepositoryApp.self) {
+                apps.append(app)
+            }
+        }
+        return apps
     }
 }
 

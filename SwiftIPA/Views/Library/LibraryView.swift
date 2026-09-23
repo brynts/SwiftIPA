@@ -138,11 +138,6 @@ struct LibraryView: View {
                 .padding(.horizontal, SISpacing.xl)
             Button("Import IPA") { showingImporter = true }
                 .buttonStyle(.siPrimary)
-            Text("Downloaded an IPA in your browser? Tap Share on it there and choose SwiftIPA — that's more reliable than picking it from Files.")
-                .font(SIFont.caption)
-                .foregroundStyle(SIColor.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, SISpacing.xl)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

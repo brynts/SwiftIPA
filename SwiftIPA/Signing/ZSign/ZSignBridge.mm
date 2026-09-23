@@ -15,6 +15,7 @@
 #include <openssl/asn1.h>
 #include <openssl/bio.h>
 #include <time.h>
+#include <unistd.h>
 #endif
 
 @implementation ZSignResult
@@ -25,9 +26,66 @@
 
 @interface ZSignBridge ()
 + (nullable NSDate *)dateFromCertificateData:(NSData *)certificateData notAfter:(BOOL)wantsNotAfter;
+#if SWIFTIPA_HAS_ZSIGN
++ (NSString *)captureStdoutDuringBlock:(void (^)(void))block;
++ (nullable NSString *)lastErrorLineFromCapturedOutput:(NSString *)output;
+#endif
 @end
 
 @implementation ZSignBridge
+
+#if SWIFTIPA_HAS_ZSIGN
++ (NSString *)captureStdoutDuringBlock:(void (^)(void))block {
+    int pipeFDs[2];
+    if (0 != pipe(pipeFDs)) {
+        block();
+        return @"";
+    }
+    int savedStdout = dup(STDOUT_FILENO);
+    dup2(pipeFDs[1], STDOUT_FILENO);
+    close(pipeFDs[1]);
+
+    NSMutableData *captured = [NSMutableData data];
+    dispatch_semaphore_t readerDone = dispatch_semaphore_create(0);
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+        uint8_t buffer[4096];
+        ssize_t bytesRead;
+        while ((bytesRead = read(pipeFDs[0], buffer, sizeof(buffer))) > 0) {
+            [captured appendBytes:buffer length:(NSUInteger)bytesRead];
+        }
+        close(pipeFDs[0]);
+        dispatch_semaphore_signal(readerDone);
+    });
+
+    block();
+
+    fflush(stdout);
+    dup2(savedStdout, STDOUT_FILENO);
+    close(savedStdout);
+    dispatch_semaphore_wait(readerDone, DISPATCH_TIME_FOREVER);
+
+    NSString *text = [[NSString alloc] initWithData:captured encoding:NSUTF8StringEncoding];
+    return text ?: @"";
+}
+
++ (nullable NSString *)lastErrorLineFromCapturedOutput:(NSString *)output {
+    if (output.length == 0) return nil;
+    NSError *regexError = nil;
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"\x1b\\[31m(.*?)\x1b\\[0m"
+                                                                             options:NSRegularExpressionDotMatchesLineSeparators
+                                                                               error:&regexError];
+    if (!regex) return nil;
+    NSArray<NSTextCheckingResult *> *matches = [regex matchesInString:output options:0 range:NSMakeRange(0, output.length)];
+    if (matches.count == 0) return nil;
+    NSTextCheckingResult *lastMatch = matches.lastObject;
+    NSString *raw = [output substringWithRange:[lastMatch rangeAtIndex:1]];
+    NSString *trimmed = [raw stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    if ([trimmed hasPrefix:@">>> "]) {
+        trimmed = [trimmed substringFromIndex:4];
+    }
+    return trimmed.length > 0 ? trimmed : nil;
+}
+#endif
 
 + (BOOL)isEngineAvailable {
 #if SWIFTIPA_HAS_ZSIGN
@@ -43,61 +101,70 @@
 #if SWIFTIPA_HAS_ZSIGN
     CFTimeInterval started = CACurrentMediaTime();
 
-    ZSignAsset asset;
-    bool prepared = asset.Init(
-        std::string([options.p12Path UTF8String] ?: ""),
-        std::string([options.p12Path UTF8String] ?: ""),
-        std::string([options.provisionPath UTF8String] ?: ""),
-        std::string(options.entitlementsPath ? [options.entitlementsPath UTF8String] : ""),
-        std::string([options.p12Password UTF8String] ?: ""),
-        options.adhoc,
-        true,
-        false
-    );
+    __block bool prepared = false;
+    __block bool signed_ = false;
+
+    NSString *capturedOutput = [self captureStdoutDuringBlock:^{
+        ZSignAsset asset;
+        prepared = asset.Init(
+            std::string([options.p12Path UTF8String] ?: ""),
+            std::string([options.p12Path UTF8String] ?: ""),
+            std::string([options.provisionPath UTF8String] ?: ""),
+            std::string(options.entitlementsPath ? [options.entitlementsPath UTF8String] : ""),
+            std::string([options.p12Password UTF8String] ?: ""),
+            options.adhoc,
+            true,
+            false
+        );
+        if (!prepared) {
+            return;
+        }
+
+        ZBundle bundle;
+        bundle.m_bEnableDocuments = false;
+        bundle.m_strMinVersion = std::string(options.minimumOSVersion ? [options.minimumOSVersion UTF8String] : "");
+        bundle.m_strIconFile = std::string(options.iconPath ? [options.iconPath UTF8String] : "");
+        bundle.m_bRemoveExtensions = options.removeExtensions;
+        bundle.m_bRemoveWatchApp = options.removeWatchApp;
+        bundle.m_bRemoveUISupportedDevices = options.removeUISupportedDevices;
+        bundle.m_bInjectExtensions = options.injectIntoExtensions;
+
+        std::vector<std::string> dylibs;
+        for (NSString *path in options.dylibPathsToInject) {
+            dylibs.push_back(std::string([path UTF8String]));
+        }
+        std::vector<std::string> removedDylibs;
+        for (NSString *name in options.dylibNamesToRemove) {
+            removedDylibs.push_back(std::string([name UTF8String]));
+        }
+
+        signed_ = bundle.SignFolder(
+            &asset,
+            std::string([folderPath UTF8String] ?: ""),
+            std::string(options.bundleIdentifier ? [options.bundleIdentifier UTF8String] : ""),
+            std::string(options.bundleShortVersion ? [options.bundleShortVersion UTF8String] : ""),
+            std::string(options.bundleName ? [options.bundleName UTF8String] : ""),
+            dylibs,
+            removedDylibs,
+            options.forceSign,
+            options.weakInject,
+            true,
+            options.removeProvisionAfterSigning
+        );
+    }];
+
+    result.duration = CACurrentMediaTime() - started;
+    NSString *detail = [self lastErrorLineFromCapturedOutput:capturedOutput];
 
     if (!prepared) {
         result.code = ZSignResultCodeInvalidCertificate;
-        result.message = @"zsign could not load the certificate, private key or provisioning profile.";
+        result.message = detail ?: @"zsign could not load the certificate, private key or provisioning profile.";
         return result;
     }
 
-    ZBundle bundle;
-    bundle.m_bEnableDocuments = false;
-    bundle.m_strMinVersion = std::string(options.minimumOSVersion ? [options.minimumOSVersion UTF8String] : "");
-    bundle.m_strIconFile = std::string(options.iconPath ? [options.iconPath UTF8String] : "");
-    bundle.m_bRemoveExtensions = options.removeExtensions;
-    bundle.m_bRemoveWatchApp = options.removeWatchApp;
-    bundle.m_bRemoveUISupportedDevices = options.removeUISupportedDevices;
-    bundle.m_bInjectExtensions = options.injectIntoExtensions;
-
-    std::vector<std::string> dylibs;
-    for (NSString *path in options.dylibPathsToInject) {
-        dylibs.push_back(std::string([path UTF8String]));
-    }
-    std::vector<std::string> removedDylibs;
-    for (NSString *name in options.dylibNamesToRemove) {
-        removedDylibs.push_back(std::string([name UTF8String]));
-    }
-
-    bool signed_ = bundle.SignFolder(
-        &asset,
-        std::string([folderPath UTF8String] ?: ""),
-        std::string(options.bundleIdentifier ? [options.bundleIdentifier UTF8String] : ""),
-        std::string(options.bundleShortVersion ? [options.bundleShortVersion UTF8String] : ""),
-        std::string(options.bundleName ? [options.bundleName UTF8String] : ""),
-        dylibs,
-        removedDylibs,
-        options.forceSign,
-        options.weakInject,
-        true,
-        options.removeProvisionAfterSigning
-    );
-
-    result.duration = CACurrentMediaTime() - started;
-
     if (!signed_) {
         result.code = ZSignResultCodeSigningFailed;
-        result.message = @"zsign failed to sign the app bundle. Check the certificate, provisioning profile and entitlements.";
+        result.message = detail ?: @"zsign failed to sign the app bundle. Check the certificate, provisioning profile and entitlements.";
         return result;
     }
 

@@ -107,16 +107,6 @@ struct SettingsView: View {
             }
 
             Section {
-                Button {
-                    exportCertificate()
-                } label: {
-                    Label("Export Trust Certificate", systemImage: "lock.doc")
-                }
-            } header: {
-                Label("Local Install Server", systemImage: "wifi")
-            }
-
-            Section {
                 NavigationLink("Changelog") { ChangelogView() }
                 HStack {
                     Text("Version")
@@ -210,10 +200,6 @@ struct SettingsView: View {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.1.0"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0"
         return "\(version) (\(build))"
-    }
-
-    private func exportCertificate() {
-        guard (try? LocalServerIdentity.exportTrustCertificate()) != nil else { return }
     }
 
     private func openAppFolder() {

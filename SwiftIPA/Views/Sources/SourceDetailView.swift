@@ -5,7 +5,8 @@ struct SourceDetailView: View {
 
     @ObservedObject private var sourceStore = SourceStore.shared
     @State private var downloadingID: String?
-    @State private var progress: Double = 0
+    @State private var progress: Double?
+    @State private var downloadedBytes: Int64 = 0
     @State private var errorMessage: String?
     @State private var signEntryID: UUID?
 
@@ -21,6 +22,7 @@ struct SourceDetailView: View {
                         app: app,
                         isDownloading: downloadingID == app.id,
                         progress: progress,
+                        downloadedBytes: downloadedBytes,
                         onDownload: { download(app) }
                     )
                 }
@@ -49,10 +51,14 @@ struct SourceDetailView: View {
         guard let version = app.latest else { return }
         downloadingID = app.id
         progress = 0
+        downloadedBytes = 0
         Task {
             do {
-                let url = try await RepositoryService.download(version) { value in
-                    Task { @MainActor in progress = value }
+                let url = try await RepositoryService.download(version) { fraction, bytesWritten in
+                    Task { @MainActor in
+                        progress = fraction
+                        downloadedBytes = bytesWritten
+                    }
                 }
                 let entry = try await AppLibraryStore.shared.importIPA(at: url, sourceName: source?.name)
                 try? FileManager.default.removeItem(at: url)
@@ -73,8 +79,15 @@ struct SourceDetailView: View {
 private struct RepositoryAppRow: View {
     let app: RepositoryApp
     let isDownloading: Bool
-    let progress: Double
+    let progress: Double?
+    let downloadedBytes: Int64
     let onDownload: () -> Void
+
+    private static let byteFormatter: ByteCountFormatter = {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        return formatter
+    }()
 
     var body: some View {
         HStack(spacing: SISpacing.md) {
@@ -94,8 +107,17 @@ private struct RepositoryAppRow: View {
             Spacer()
 
             if isDownloading {
-                ProgressView(value: progress)
-                    .frame(width: 60)
+                if let progress {
+                    ProgressView(value: progress)
+                        .frame(width: 60)
+                } else {
+                    VStack(alignment: .trailing, spacing: 2) {
+                        ProgressView()
+                        Text(Self.byteFormatter.string(fromByteCount: downloadedBytes))
+                            .font(SIFont.caption)
+                            .foregroundStyle(SIColor.textSecondary)
+                    }
+                }
             } else {
                 Button("Get") { onDownload() }
                     .buttonStyle(.siSecondary)

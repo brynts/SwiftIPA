@@ -631,16 +631,6 @@
         }
       }
     },
-    "Downloaded an IPA in your browser? Tap Share on it there and choose SwiftIPA — that's more reliable than picking it from Files.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "IPA im Browser heruntergeladen? Tippe dort auf Teilen und wähle SwiftIPA aus — das klappt zuverlässiger als die Auswahl über Dateien."
-          }
-        }
-      }
-    },
     "Encrypted": {
       "localizations": {
         "de": {
@@ -727,16 +717,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "IPA-Export funktioniert immer — öffne sie mit AltStore, Sideloadly oder TrollStore. Die Direktinstallation hängt von deiner iOS-Version und deinem Netzwerk ab und klappt nicht immer."
-          }
-        }
-      }
-    },
-    "Export Trust Certificate": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vertrauenszertifikat exportieren"
           }
         }
       }
@@ -1197,16 +1177,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Preset laden"
-          }
-        }
-      }
-    },
-    "Local Install Server": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lokaler Installationsserver"
           }
         }
       }
@@ -2257,16 +2227,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Erneut versuchen"
-          }
-        }
-      }
-    },
-    "Try Install on This Device": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Installation auf diesem Gerät versuchen"
           }
         }
       }
