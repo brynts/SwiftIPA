@@ -15,11 +15,19 @@
       "category": "utilities",
       "version": "1.1.0",
       "versionDate": "2026-09-23",
-      "versionDescription": "- Fix the no-profile install path: serve the manifest through a properly reachable HTTPS source\n- Update AltStore source for build 17",
-      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-18/SwiftIPA-unsigned.ipa",
+      "versionDescription": "- Scrub competitor name from the newest changelog text in the AltStore source\n- Update AltStore source for build 18\n- Fix the no-profile install path: serve the manifest through a properly reachable HTTPS source\n- Update AltStore source for build 17\n- Refine install trigger logic: HTTPS+LAN with a direct itms-services open is the default (the proven primary path), plain HTTP+LAN through the embedded Safari redirect page is now the true no-trust fallback",
+      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-19/SwiftIPA-unsigned.ipa",
       "size": 3086995,
       "minOSVersion": "16.0",
       "versions": [
+        {
+          "version": "1.1.0",
+          "date": "2026-09-23",
+          "localizedDescription": "- Scrub competitor name from the newest changelog text in the AltStore source\n- Update AltStore source for build 18\n- Fix the no-profile install path: serve the manifest through a properly reachable HTTPS source\n- Update AltStore source for build 17\n- Refine install trigger logic: HTTPS+LAN with a direct itms-services open is the default (the proven primary path), plain HTTP+LAN through the embedded Safari redirect page is now the true no-trust fallback",
+          "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-19/SwiftIPA-unsigned.ipa",
+          "size": 3086995,
+          "minOSVersion": "16.0"
+        },
         {
           "version": "1.1.0",
           "date": "2026-09-23",
