@@ -69,16 +69,7 @@ struct InstallProgressView: View {
                     }
                     .buttonStyle(.siPrimaryWide)
                     .padding(.horizontal, SISpacing.xl)
-                    if !isUsingFallback {
-                        Button(isUsingLoopback ? "Didn't Work? Try This Device's Wi-Fi Address" : "Didn't Work? Try Localhost Instead") {
-                            Task { await startServer(useFallback: false, useLoopback: !isUsingLoopback) }
-                        }
-                        .buttonStyle(.siSecondary)
-                        Button("Try the Certificate Method Instead") {
-                            Task { await startServer(useFallback: true, useLoopback: false) }
-                        }
-                        .buttonStyle(.siSecondary)
-                    } else {
+                    if isUsingFallback {
                         Button("Try Without a Certificate Instead") {
                             Task { await startServer(useFallback: false, useLoopback: false) }
                         }
