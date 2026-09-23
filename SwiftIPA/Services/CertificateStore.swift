@@ -110,6 +110,18 @@ final class CertificateStore: ObservableObject {
         persist()
     }
 
+    func removeAllCertificates() {
+        for certificate in certificates {
+            try? FileManager.default.removeItem(at: p12URL(for: certificate))
+            try? FileManager.default.removeItem(at: provisionURL(for: certificate))
+            KeychainStore.removePassword(forCertificateID: certificate.id)
+        }
+        certificates.removeAll()
+        defaultCertificateID = nil
+        defaults.removeObject(forKey: defaultKey)
+        persist()
+    }
+
     func setDefault(_ id: UUID) {
         defaultCertificateID = id
         defaults.set(id.uuidString, forKey: defaultKey)

@@ -26,6 +26,11 @@ final class PresetStore: ObservableObject {
         persist()
     }
 
+    func removeAll() {
+        presets.removeAll()
+        persist()
+    }
+
     func markUsed(_ preset: SigningPreset) {
         guard let index = presets.firstIndex(where: { $0.id == preset.id }) else { return }
         presets[index].lastUsedAt = Date()

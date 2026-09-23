@@ -65,6 +65,14 @@ final class DylibLibraryStore: ObservableObject {
         persist()
     }
 
+    func removeAll() {
+        for dylib in dylibs {
+            try? FileManager.default.removeItem(at: url(for: dylib))
+        }
+        dylibs.removeAll()
+        persist()
+    }
+
     private static func uniqueFileName(for name: String, in folder: URL) -> String {
         var candidate = name
         var attempt = 1

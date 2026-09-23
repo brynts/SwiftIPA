@@ -109,6 +109,17 @@ final class AppLibraryStore: ObservableObject {
         persist()
     }
 
+    func removeAll(where predicate: (AppEntry) -> Bool) {
+        for entry in apps where predicate(entry) {
+            try? FileManager.default.removeItem(at: ipaURL(for: entry))
+            if let iconURL = iconURL(for: entry) {
+                try? FileManager.default.removeItem(at: iconURL)
+            }
+        }
+        apps.removeAll(where: predicate)
+        persist()
+    }
+
     func rename(_ entry: AppEntry, to newName: String) {
         guard let index = apps.firstIndex(where: { $0.id == entry.id }) else { return }
         apps[index].name = newName

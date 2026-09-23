@@ -39,6 +39,12 @@ final class SourceStore: ObservableObject {
         persist()
     }
 
+    func removeAll() {
+        sources.removeAll()
+        catalog.removeAll()
+        persist()
+    }
+
     func refresh(_ source: RepositorySource) async {
         guard let payload = try? await RepositoryService.fetch(url: source.url) else { return }
         await MainActor.run {

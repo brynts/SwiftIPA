@@ -2640,6 +2640,176 @@
           }
         }
       }
+    },
+    "Remove all signed apps?": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle signierten Apps entfernen?"
+          }
+        }
+      }
+    },
+    "Remove all imported apps?": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle importierten Apps entfernen?"
+          }
+        }
+      }
+    },
+    "Remove all certificates?": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle Zertifikate entfernen?"
+          }
+        }
+      }
+    },
+    "Reset SwiftIPA completely?": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SwiftIPA komplett zurücksetzen?"
+          }
+        }
+      }
+    },
+    "This deletes every signed app from your library. Their original imported IPAs are removed too.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dies löscht jede signierte App aus deiner Bibliothek. Die ursprünglich importierten IPAs werden ebenfalls entfernt."
+          }
+        }
+      }
+    },
+    "This deletes every app in your library that hasn't been signed yet. Signed apps are left alone.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dies löscht jede App in deiner Bibliothek, die noch nicht signiert wurde. Signierte Apps bleiben unberührt."
+          }
+        }
+      }
+    },
+    "This deletes every certificate, its saved password, and its expiry tracking.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dies löscht jedes Zertifikat, sein gespeichertes Passwort und die Ablaufüberwachung."
+          }
+        }
+      }
+    },
+    "This deletes your entire library, all certificates, tweaks, presets, sources, and the signing cache, and resets every setting. There's no undo.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dies löscht deine gesamte Bibliothek, alle Zertifikate, Tweaks, Vorlagen, Quellen und den Signier-Cache und setzt jede Einstellung zurück. Es gibt kein Rückgängig."
+          }
+        }
+      }
+    },
+    "Reset Everything": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alles zurücksetzen"
+          }
+        }
+      }
+    },
+    "Remove": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entfernen"
+          }
+        }
+      }
+    },
+    "Remove All Signed Apps": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle signierten Apps entfernen"
+          }
+        }
+      }
+    },
+    "Remove All Imported Apps": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle importierten Apps entfernen"
+          }
+        }
+      }
+    },
+    "Remove All Certificates": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle Zertifikate entfernen"
+          }
+        }
+      }
+    },
+    "These remove data from this device only and can't be undone.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dies entfernt Daten nur von diesem Gerät und kann nicht rückgängig gemacht werden."
+          }
+        }
+      }
+    },
+    "View App Folder": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App-Ordner anzeigen"
+          }
+        }
+      }
+    },
+    "Storage": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speicher"
+          }
+        }
+      }
+    },
+    "Opens SwiftIPA's Documents folder in the Files app — imported and signed IPAs, certificates, tweaks, and presets all live there.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öffnet den Dokumente-Ordner von SwiftIPA in der Dateien-App — importierte und signierte IPAs, Zertifikate, Tweaks und Vorlagen liegen dort."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
