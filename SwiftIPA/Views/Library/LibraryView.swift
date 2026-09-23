@@ -71,8 +71,11 @@ struct LibraryView: View {
                 }
             }
         }
-        .fileImporter(isPresented: $showingImporter, allowedContentTypes: [.data, .zip, .item], allowsMultipleSelection: false) { result in
-            handleImport(result)
+        .sheet(isPresented: $showingImporter) {
+            DocumentPickerView(contentTypes: [.data, .item], allowsMultipleSelection: true) { urls in
+                handleImport(urls)
+            }
+            .ignoresSafeArea()
         }
         .sheet(isPresented: $showingDownloadSheet) {
             DownloadByURLSheet()
@@ -172,28 +175,23 @@ struct LibraryView: View {
         }
     }
 
-    private func handleImport(_ result: Result<[URL], Error>) {
-        switch result {
-        case .success(let urls):
-            guard !urls.isEmpty else { return }
-            importingCount = urls.count
-            isImporting = true
-            Task {
-                var firstError: String?
-                for url in urls {
-                    do {
-                        _ = try await library.importIPA(at: url)
-                    } catch {
-                        if firstError == nil { firstError = error.localizedDescription }
-                    }
-                }
-                await MainActor.run {
-                    isImporting = false
-                    importError = firstError
+    private func handleImport(_ urls: [URL]) {
+        guard !urls.isEmpty else { return }
+        importingCount = urls.count
+        isImporting = true
+        Task {
+            var firstError: String?
+            for url in urls {
+                do {
+                    _ = try await library.importIPA(at: url)
+                } catch {
+                    if firstError == nil { firstError = error.localizedDescription }
                 }
             }
-        case .failure(let error):
-            importError = error.localizedDescription
+            await MainActor.run {
+                isImporting = false
+                importError = firstError
+            }
         }
     }
 }
