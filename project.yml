@@ -59,15 +59,6 @@ targets:
           - CFBundleURLName: com.xsxs18.SwiftIPA
             CFBundleURLSchemes:
               - swiftipa
-        UTImportedTypeDeclarations:
-          - UTTypeIdentifier: com.apple.itunes.ipa
-            UTTypeDescription: iOS App Archive
-            UTTypeConformsTo:
-              - public.data
-              - public.archive
-            UTTypeTagSpecification:
-              public.filename-extension:
-                - ipa
         UIBackgroundModes:
           - fetch
     settings:

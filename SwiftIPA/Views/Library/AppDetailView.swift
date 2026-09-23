@@ -54,24 +54,28 @@ struct AppDetailView: View {
                     Label(entry.isSigned ? "Re-sign" : "Sign", systemImage: "bolt.fill")
                 }
 
-                if entry.isSigned {
-                    Button {
-                        showingInstall = true
-                    } label: {
-                        Label("Install on this device", systemImage: "arrow.down.circle.fill")
-                    }
-                }
-
                 Button {
                     showingShareSheet = true
                 } label: {
                     Label("Export IPA", systemImage: "square.and.arrow.up")
                 }
 
+                if entry.isSigned {
+                    Button {
+                        showingInstall = true
+                    } label: {
+                        Label("Try Install on This Device", systemImage: "arrow.down.circle.fill")
+                    }
+                }
+
                 Button {
                     inspect(entry)
                 } label: {
                     Label("Inspect", systemImage: "magnifyingglass")
+                }
+            } footer: {
+                if entry.isSigned {
+                    Text("Export IPA works every time — open it with AltStore, Sideloadly, or TrollStore. Direct on-device install depends on your iOS version and network, so it doesn't always succeed.")
                 }
             }
 

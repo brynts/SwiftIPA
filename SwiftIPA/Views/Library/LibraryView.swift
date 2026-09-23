@@ -179,6 +179,12 @@ struct LibraryView: View {
         guard !urls.isEmpty else { return }
         importingCount = urls.count
         isImporting = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.beginImport(urls)
+        }
+    }
+
+    private func beginImport(_ urls: [URL]) {
         Task {
             var firstError: String?
             for url in urls {

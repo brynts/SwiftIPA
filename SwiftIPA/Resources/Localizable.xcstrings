@@ -711,6 +711,16 @@
         }
       }
     },
+    "Export IPA works every time — open it with AltStore, Sideloadly, or TrollStore. Direct on-device install depends on your iOS version and network, so it doesn't always succeed.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IPA-Export funktioniert immer — öffne sie mit AltStore, Sideloadly oder TrollStore. Die Direktinstallation hängt von deiner iOS-Version und deinem Netzwerk ab und klappt nicht immer."
+          }
+        }
+      }
+    },
     "Export Trust Certificate": {
       "localizations": {
         "de": {
@@ -2207,6 +2217,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Erneut versuchen"
+          }
+        }
+      }
+    },
+    "Try Install on This Device": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installation auf diesem Gerät versuchen"
           }
         }
       }
