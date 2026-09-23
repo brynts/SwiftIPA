@@ -15,11 +15,19 @@
       "category": "utilities",
       "version": "1.2.0",
       "versionDate": "2026-09-23",
-      "versionDescription": "- Make the instant-resign cache actually instant via hard links instead of double file copies, fix download progress staying stuck at 0% when a server omits Content-Length, and bring the README up to date with how install actually works now\n- Update AltStore source for build 20",
-      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-21/SwiftIPA-unsigned.ipa",
-      "size": 3096216,
+      "versionDescription": "- Remove the leftover status text from the install redirect page, leaving a blank screen during the instant handoff\n- Update AltStore source for build 21",
+      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-22/SwiftIPA-unsigned.ipa",
+      "size": 3096204,
       "minOSVersion": "16.0",
       "versions": [
+        {
+          "version": "1.2.0",
+          "date": "2026-09-23",
+          "localizedDescription": "- Remove the leftover status text from the install redirect page, leaving a blank screen during the instant handoff\n- Update AltStore source for build 21",
+          "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-22/SwiftIPA-unsigned.ipa",
+          "size": 3096204,
+          "minOSVersion": "16.0"
+        },
         {
           "version": "1.2.0",
           "date": "2026-09-23",
