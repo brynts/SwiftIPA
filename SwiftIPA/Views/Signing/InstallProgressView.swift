@@ -3,7 +3,7 @@ import SwiftUI
 struct InstallProgressView: View {
     let entryID: UUID
 
-    @State private var installURL: URL?
+    @State private var installLink: InstallLink?
     @State private var errorMessage: String?
     @State private var isPreparing = true
     @State private var showingTrustSheet = false
@@ -30,33 +30,39 @@ struct InstallProgressView: View {
                         .foregroundStyle(SIColor.textSecondary)
                         .padding(.horizontal, SISpacing.xl)
                     if !isUsingFallback {
-                        Button("Try the Wi-Fi Method Instead") {
+                        Button("Try the No-Trust Method Instead") {
                             Task { await startServer(useFallback: true) }
                         }
                         .buttonStyle(.siPrimaryWide)
                         .padding(.horizontal, SISpacing.xl)
                     }
-                } else if let installURL {
+                } else if let installLink {
                     Image(systemName: "wifi")
                         .font(.system(size: 40))
                         .foregroundStyle(SIColor.accent)
                     Text("Ready to install.")
                         .font(SIFont.headline)
-                    if isUsingFallback {
+                    if !isUsingFallback {
                         trustSteps
                     }
                     Button("Install Now") {
-                        showingSafari = true
+                        switch installLink.presentationStyle {
+                        case .direct:
+                            UIApplication.shared.open(installLink.url)
+                        case .webView:
+                            showingSafari = true
+                        }
                     }
                     .buttonStyle(.siPrimaryWide)
                     .padding(.horizontal, SISpacing.xl)
-                    Button("Open in Safari Instead") {
-                        UIApplication.shared.open(installURL)
-                    }
-                    .buttonStyle(.siSecondary)
                     if !isUsingFallback {
-                        Button("Didn't Work? Try Wi-Fi Method") {
+                        Button("Didn't Work? Try Without Trusting a Certificate") {
                             Task { await startServer(useFallback: true) }
+                        }
+                        .buttonStyle(.siSecondary)
+                    } else {
+                        Button("Didn't Work? Try the Certificate Method") {
+                            Task { await startServer(useFallback: false) }
                         }
                         .buttonStyle(.siSecondary)
                     }
@@ -80,8 +86,8 @@ struct InstallProgressView: View {
                 }
             }
             .fullScreenCover(isPresented: $showingSafari) {
-                if let installURL {
-                    SafariView(url: installURL)
+                if let installLink {
+                    SafariView(url: installLink.url)
                         .ignoresSafeArea()
                 }
             }
@@ -96,6 +102,9 @@ struct InstallProgressView: View {
             trustStep(number: 1, text: String(localized: "Tap \"Trust Local Certificate\" below and save the file to Files."))
             trustStep(number: 2, text: String(localized: "Open the saved file — iOS will offer to install a profile."))
             trustStep(number: 3, text: String(localized: "Settings → General → VPN & Device Management → SwiftIPA Local Server → Trust."))
+            Text("Only needed once, ever.")
+                .font(SIFont.caption.bold())
+                .foregroundStyle(SIColor.textSecondary)
             Button("Trust Local Certificate") { showingTrustSheet = true }
                 .buttonStyle(.siSecondary)
                 .padding(.top, SISpacing.xs)
@@ -124,20 +133,19 @@ struct InstallProgressView: View {
         await MainActor.run {
             isPreparing = true
             errorMessage = nil
-            installURL = nil
+            installLink = nil
             isUsingFallback = useFallback
         }
         do {
-            let url = try await InstallServer.shared.startInstall(
+            let link = try await InstallServer.shared.startInstall(
                 ipaURL: AppLibraryStore.shared.ipaURL(for: entry),
                 appName: entry.name,
                 bundleIdentifier: entry.bundleIdentifier,
                 version: entry.displayVersion,
-                useSecureConnection: useFallback,
-                useLocalNetworkAddress: useFallback
+                mode: useFallback ? .plainWebView : .secureDirect
             )
             await MainActor.run {
-                installURL = url
+                installLink = link
                 isPreparing = false
             }
         } catch {

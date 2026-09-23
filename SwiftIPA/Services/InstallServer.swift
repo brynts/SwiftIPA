@@ -16,6 +16,35 @@ enum InstallServerError: LocalizedError {
     }
 }
 
+enum InstallPresentationStyle {
+    case direct
+    case webView
+}
+
+struct InstallLink {
+    let url: URL
+    let presentationStyle: InstallPresentationStyle
+}
+
+enum InstallMode {
+    case secureDirect
+    case plainWebView
+
+    var useSecureConnection: Bool {
+        switch self {
+        case .secureDirect: return true
+        case .plainWebView: return false
+        }
+    }
+
+    var presentationStyle: InstallPresentationStyle {
+        switch self {
+        case .secureDirect: return .direct
+        case .plainWebView: return .webView
+        }
+    }
+}
+
 final class InstallServer {
     static let shared = InstallServer()
 
@@ -36,27 +65,22 @@ final class InstallServer {
         appName: String,
         bundleIdentifier: String,
         version: String,
-        useSecureConnection: Bool = false,
-        useLocalNetworkAddress: Bool = false
-    ) async throws -> URL {
+        mode: InstallMode
+    ) async throws -> InstallLink {
         stop()
 
         self.ipaURL = ipaURL
         self.appName = appName
         self.bundleIdentifier = bundleIdentifier
         self.version = version
-        self.scheme = useSecureConnection ? "https" : "http"
-        self.port = useSecureConnection ? 8443 : 8442
+        self.scheme = mode.useSecureConnection ? "https" : "http"
+        self.port = mode.useSecureConnection ? 8443 : 8442
 
-        if useLocalNetworkAddress {
-            guard let address = Self.wifiIPAddress() else { throw InstallServerError.noAddress }
-            self.host = address
-        } else {
-            self.host = "127.0.0.1"
-        }
+        guard let address = Self.wifiIPAddress() else { throw InstallServerError.noAddress }
+        self.host = address
 
         let parameters: NWParameters
-        if useSecureConnection {
+        if mode.useSecureConnection {
             let (identity, _, _) = try LocalServerIdentity.ensureIdentity()
             guard let secIdentity = sec_identity_create(identity) else { throw InstallServerError.noIdentity }
             let tlsOptions = NWProtocolTLS.Options()
@@ -88,8 +112,13 @@ final class InstallServer {
 
                 switch state {
                 case .ready:
-                    let pageURL = "\(self.scheme)://\(self.host):\(self.port)/install"
-                    continuation.resume(returning: URL(string: pageURL)!)
+                    switch mode.presentationStyle {
+                    case .direct:
+                        continuation.resume(returning: InstallLink(url: URL(string: self.itmsServicesLink)!, presentationStyle: .direct))
+                    case .webView:
+                        let pageURL = "\(self.scheme)://\(self.host):\(self.port)/install"
+                        continuation.resume(returning: InstallLink(url: URL(string: pageURL)!, presentationStyle: .webView))
+                    }
                 case .failed(let error):
                     continuation.resume(throwing: InstallServerError.listenerFailed(error.localizedDescription))
                 default:

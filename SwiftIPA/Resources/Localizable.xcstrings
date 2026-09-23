@@ -541,6 +541,26 @@
         }
       }
     },
+    "Didn't Work? Try Without Trusting a Certificate": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hat nicht geklappt? Ohne Zertifikat-Vertrauen versuchen"
+          }
+        }
+      }
+    },
+    "Didn't Work? Try the Certificate Method": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hat nicht geklappt? Zertifikat-Methode versuchen"
+          }
+        }
+      }
+    },
     "Disable Liquid Glass": {
       "localizations": {
         "de": {
@@ -1391,6 +1411,16 @@
         }
       }
     },
+    "Only needed once, ever.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nur einmal nötig, für immer."
+          }
+        }
+      }
+    },
     "Open in Safari Instead": {
       "localizations": {
         "de": {
@@ -2227,6 +2257,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Installation auf diesem Gerät versuchen"
+          }
+        }
+      }
+    },
+    "Try the No-Trust Method Instead": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stattdessen Methode ohne Vertrauen versuchen"
           }
         }
       }
