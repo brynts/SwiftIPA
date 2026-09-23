@@ -13,13 +13,21 @@
       "iconURL": "https://raw.githubusercontent.com/xsxs18-dev/SwiftIPA/main/SwiftIPA/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png",
       "tintColor": "#FF9F0A",
       "category": "utilities",
-      "version": "1.3.1",
+      "version": "1.5.0",
       "versionDate": "2026-09-23",
-      "versionDescription": "- Simplify the install screen to just the primary Safari-based flow, dropping the localhost and certificate fallback buttons from the ready state\n- Update AltStore source for build 23",
-      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-24/SwiftIPA-unsigned.ipa",
-      "size": 3106546,
+      "versionDescription": "- Fix the previous build failure: a raw C array can't be captured directly inside an Objective-C block, so copy the pipe fds into scalars first\n- Make the whole app feel more alive: tactile press feedback on every button and card, animated list insert/remove across the library/certificates/tweaks/presets/sources, card shadows, animated signing and install progress states, and drag indicators on sheets\n- Fix update checker always reporting an update, make Sources tolerate one malformed app entry instead of dropping the whole list, reuse a real download progress reporter for Source downloads, surface zsign's actual failure reason instead of a generic message, load the no-profile install through a hidden web view instead of a visible Safari sheet, and clean up Settings/Library/AppDetail text\n- Update AltStore source for build 24",
+      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-27/SwiftIPA-unsigned.ipa",
+      "size": 3132334,
       "minOSVersion": "16.0",
       "versions": [
+        {
+          "version": "1.5.0",
+          "date": "2026-09-23",
+          "localizedDescription": "- Fix the previous build failure: a raw C array can't be captured directly inside an Objective-C block, so copy the pipe fds into scalars first\n- Make the whole app feel more alive: tactile press feedback on every button and card, animated list insert/remove across the library/certificates/tweaks/presets/sources, card shadows, animated signing and install progress states, and drag indicators on sheets\n- Fix update checker always reporting an update, make Sources tolerate one malformed app entry instead of dropping the whole list, reuse a real download progress reporter for Source downloads, surface zsign's actual failure reason instead of a generic message, load the no-profile install through a hidden web view instead of a visible Safari sheet, and clean up Settings/Library/AppDetail text\n- Update AltStore source for build 24",
+          "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-27/SwiftIPA-unsigned.ipa",
+          "size": 3132334,
+          "minOSVersion": "16.0"
+        },
         {
           "version": "1.3.1",
           "date": "2026-09-23",
