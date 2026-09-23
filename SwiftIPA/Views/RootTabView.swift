@@ -21,13 +21,6 @@ struct RootTabView: View {
             }
 
             NavigationStack {
-                CertificatesView()
-            }
-            .tabItem {
-                Label("Certificates", systemImage: "checkmark.seal.fill")
-            }
-
-            NavigationStack {
                 SettingsView()
             }
             .tabItem {

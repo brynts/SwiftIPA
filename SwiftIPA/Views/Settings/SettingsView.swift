@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject private var themeManager = ThemeManager.shared
+    @ObservedObject private var certificateStore = CertificateStore.shared
     @State private var cacheSize: Int64 = SigningCache.shared.totalSize
     @State private var updateResult: UpdateCheckResult?
     @State private var isCheckingUpdate = false
@@ -9,7 +10,7 @@ struct SettingsView: View {
 
     var body: some View {
         List {
-            Section("Appearance") {
+            Section {
                 ForEach(SIThemeID.allCases) { id in
                     Button {
                         themeManager.select(id)
@@ -27,9 +28,27 @@ struct SettingsView: View {
                         }
                     }
                 }
+            } header: {
+                Label("Appearance", systemImage: "paintpalette.fill")
             }
 
-            Section("Signing") {
+            Section {
+                NavigationLink {
+                    CertificatesView()
+                } label: {
+                    HStack {
+                        Label("Certificates", systemImage: "checkmark.seal.fill")
+                        Spacer()
+                        Text("\(certificateStore.certificates.count)")
+                            .foregroundStyle(SIColor.textSecondary)
+                    }
+                }
+            } header: {
+                Label("Signing Identity", systemImage: "signature")
+            }
+
+            Section {
+                NavigationLink("Default Signing Options") { DefaultSigningOptionsView() }
                 NavigationLink("Signing Presets") { PresetsView() }
                 NavigationLink("Tweak Library") { TweaksLibraryView() }
                 HStack {
@@ -44,17 +63,21 @@ struct SettingsView: View {
                 } label: {
                     Text("Clear Cache")
                 }
+            } header: {
+                Label("Signing", systemImage: "bolt.fill")
             }
 
-            Section("Local Install Server") {
+            Section {
                 Button {
                     exportCertificate()
                 } label: {
                     Label("Export Trust Certificate", systemImage: "lock.doc")
                 }
+            } header: {
+                Label("Local Install Server", systemImage: "wifi")
             }
 
-            Section("About") {
+            Section {
                 NavigationLink("Changelog") { ChangelogView() }
                 HStack {
                     Text("Version")
@@ -81,6 +104,8 @@ struct SettingsView: View {
                     Text(updateError).foregroundStyle(SIColor.danger).font(SIFont.caption)
                 }
                 Link("Source on GitHub", destination: URL(string: "https://github.com/xsxs18-dev/SwiftIPA")!)
+            } header: {
+                Label("About", systemImage: "info.circle.fill")
             }
         }
         .listStyle(.insetGrouped)
@@ -89,7 +114,7 @@ struct SettingsView: View {
     }
 
     private var versionString: String {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.1.0"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0"
         return "\(version) (\(build))"
     }

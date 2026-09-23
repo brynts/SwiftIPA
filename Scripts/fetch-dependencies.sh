@@ -36,13 +36,30 @@ TMP_ZIP="$(mktemp)"
 TMP_EXTRACT="$(mktemp -d)"
 trap 'rm -f "$TMP_ZIP"; rm -rf "$TMP_EXTRACT"' EXIT
 
-DOWNLOAD_URL=$(curl -fsSL "$OPENSSL_RELEASE_API" | grep -o '"browser_download_url": *"[^"]*OpenSSL.xcframework.zip"' | head -1 | sed -E 's/.*"(https[^"]+)"/\1/')
+AUTH_HEADER=()
+if [ -n "${GH_TOKEN:-${GITHUB_TOKEN:-}}" ]; then
+  AUTH_HEADER=(-H "Authorization: Bearer ${GH_TOKEN:-$GITHUB_TOKEN}")
+fi
+
+curl_retry() {
+  local attempt
+  for attempt in 1 2 3 4 5; do
+    if curl -fsSL -A "SwiftIPA-fetch-dependencies" "${AUTH_HEADER[@]}" "$@"; then
+      return 0
+    fi
+    echo "    curl attempt $attempt failed, retrying in $((attempt * 3))s..." >&2
+    sleep $((attempt * 3))
+  done
+  return 1
+}
+
+DOWNLOAD_URL=$(curl_retry "$OPENSSL_RELEASE_API" | grep -o '"browser_download_url": *"[^"]*OpenSSL.xcframework.zip"' | head -1 | sed -E 's/.*"(https[^"]+)"/\1/')
 if [ -z "$DOWNLOAD_URL" ]; then
   echo "    could not resolve the latest OpenSSL.xcframework.zip release asset" >&2
   exit 1
 fi
 
-curl -fsSL -o "$TMP_ZIP" "$DOWNLOAD_URL"
+curl_retry -o "$TMP_ZIP" "$DOWNLOAD_URL"
 unzip -q "$TMP_ZIP" -d "$TMP_EXTRACT" "OpenSSL.xcframework/ios-arm64/OpenSSL.framework/Headers/*"
 
 HEADERS_SRC="$TMP_EXTRACT/OpenSSL.xcframework/ios-arm64/OpenSSL.framework/Headers"

@@ -41,6 +41,16 @@
         }
       }
     },
+    "Add a certificate in Settings first.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Füge zuerst in den Einstellungen ein Zertifikat hinzu."
+          }
+        }
+      }
+    },
     "Add a certificate in the Certificates tab first.": {
       "localizations": {
         "de": {
@@ -117,6 +127,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Suffix anhängen"
+          }
+        }
+      }
+    },
+    "Applies to every app you sign unless you change it for that sign, or a preset overrides it.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gilt für jede App, die du signierst, außer du änderst es für diesen einen Vorgang oder ein Preset überschreibt es."
           }
         }
       }
@@ -321,6 +341,16 @@
         }
       }
     },
+    "Compatibility": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kompatibilität"
+          }
+        }
+      }
+    },
     "Could not check for updates.": {
       "localizations": {
         "de": {
@@ -441,6 +471,16 @@
         }
       }
     },
+    "Default Signing Options": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard-Signieroptionen"
+          }
+        }
+      }
+    },
     "Delete": {
       "localizations": {
         "de": {
@@ -557,6 +597,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Von URL herunterladen"
+          }
+        }
+      }
+    },
+    "Downloaded an IPA in your browser? Tap Share on it there and choose SwiftIPA — that's more reliable than picking it from Files.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IPA im Browser heruntergeladen? Tippe dort auf Teilen und wähle SwiftIPA aus — das klappt zuverlässiger als die Auswahl über Dateien."
           }
         }
       }
@@ -1161,6 +1211,16 @@
         }
       }
     },
+    "Network": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Netzwerk"
+          }
+        }
+      }
+    },
     "No": {
       "localizations": {
         "de": {
@@ -1451,6 +1511,16 @@
         }
       }
     },
+    "Removal": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entfernen"
+          }
+        }
+      }
+    },
     "Remove App Extensions": {
       "localizations": {
         "de": {
@@ -1541,12 +1611,42 @@
         }
       }
     },
+    "Reset": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zurücksetzen"
+          }
+        }
+      }
+    },
+    "Reset every default signing option?": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wirklich alle Standard-Signieroptionen zurücksetzen?"
+          }
+        }
+      }
+    },
     "Reset to Certificate Default": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Auf Zertifikat-Standard zurücksetzen"
+          }
+        }
+      }
+    },
+    "Reset to Defaults": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf Standard zurücksetzen"
           }
         }
       }
@@ -1687,6 +1787,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Signieren"
+          }
+        }
+      }
+    },
+    "Signing Identity": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signier-Identität"
           }
         }
       }

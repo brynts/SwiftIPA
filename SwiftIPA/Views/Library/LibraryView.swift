@@ -40,6 +40,9 @@ struct LibraryView: View {
                             }
                         }
                     }
+                    .listRowInsets(EdgeInsets(top: SISpacing.xs, leading: SISpacing.md, bottom: SISpacing.xs, trailing: SISpacing.md))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
                     .onDelete(perform: delete)
                 }
                 .listStyle(.plain)
@@ -198,10 +201,10 @@ struct AppRow: View {
             }
 
             iconView
-                .frame(width: 48, height: 48)
-                .clipShape(RoundedRectangle(cornerRadius: SIRadius.sm, style: .continuous))
+                .frame(width: 52, height: 52)
+                .clipShape(RoundedRectangle(cornerRadius: SIRadius.md, style: .continuous))
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(entry.name)
                     .font(SIFont.headline)
                     .foregroundStyle(SIColor.textPrimary)
@@ -219,7 +222,14 @@ struct AppRow: View {
                 StatusBadge(text: String(localized: "Unsigned"), color: SIColor.textSecondary)
             }
         }
-        .padding(.vertical, 4)
+        .padding(SISpacing.sm + 2)
+        .siCard()
+        .overlay {
+            if isSelected {
+                RoundedRectangle(cornerRadius: SIRadius.md, style: .continuous)
+                    .stroke(SIColor.accent, lineWidth: 2)
+            }
+        }
     }
 
     @ViewBuilder
@@ -227,9 +237,9 @@ struct AppRow: View {
         if let iconURL = AppLibraryStore.shared.iconURL(for: entry), let uiImage = UIImage(contentsOfFile: iconURL.path) {
             Image(uiImage: uiImage).resizable().scaledToFill()
         } else {
-            RoundedRectangle(cornerRadius: SIRadius.sm, style: .continuous)
-                .fill(SIColor.surfaceElevated)
-                .overlay(Image(systemName: "app.dashed").foregroundStyle(SIColor.textSecondary))
+            RoundedRectangle(cornerRadius: SIRadius.md, style: .continuous)
+                .fill(SIColor.accentMuted)
+                .overlay(Image(systemName: "app.dashed").foregroundStyle(SIColor.accent))
         }
     }
 }

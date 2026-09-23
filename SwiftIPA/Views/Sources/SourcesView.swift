@@ -15,6 +15,9 @@ struct SourcesView: View {
                             SourceRow(source: source)
                         }
                     }
+                    .listRowInsets(EdgeInsets(top: SISpacing.xs, leading: SISpacing.md, bottom: SISpacing.xs, trailing: SISpacing.md))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
                     .onDelete { offsets in
                         for index in offsets { sourceStore.removeSource(sourceStore.sources[index]) }
                     }
@@ -85,6 +88,7 @@ struct SourceRow: View {
                 .font(SIFont.caption)
                 .foregroundStyle(SIColor.textSecondary)
         }
-        .padding(.vertical, 4)
+        .padding(SISpacing.sm + 2)
+        .siCard()
     }
 }

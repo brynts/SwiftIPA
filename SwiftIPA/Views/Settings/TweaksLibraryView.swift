@@ -39,6 +39,11 @@ struct TweaksLibraryView: View {
                                 Text(dylib.displaySize).font(SIFont.caption).foregroundStyle(SIColor.textSecondary)
                             }
                         }
+                        .padding(SISpacing.sm + 2)
+                        .siCard()
+                        .listRowInsets(EdgeInsets(top: SISpacing.xs, leading: SISpacing.md, bottom: SISpacing.xs, trailing: SISpacing.md))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
                     }
                     .onDelete { offsets in
                         for index in offsets { dylibStore.remove(dylibStore.dylibs[index]) }

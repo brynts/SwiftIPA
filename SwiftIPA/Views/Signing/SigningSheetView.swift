@@ -7,8 +7,8 @@ struct SigningSheetView: View {
 
     @ObservedObject private var library = AppLibraryStore.shared
     @ObservedObject private var certificateStore = CertificateStore.shared
-    @ObservedObject private var dylibStore = DylibLibraryStore.shared
     @ObservedObject private var presetStore = PresetStore.shared
+    @ObservedObject private var defaultsStore = DefaultSigningOptionsStore.shared
 
     @State private var options = SigningOptions()
     @State private var certificateID: UUID?
@@ -18,6 +18,7 @@ struct SigningSheetView: View {
     @State private var showingSavePreset = false
     @State private var presetName = ""
     @State private var showingIconPicker = false
+    @State private var hasSeededDefaults = false
 
     @Environment(\.dismiss) private var dismiss
 
@@ -29,14 +30,13 @@ struct SigningSheetView: View {
         NavigationStack {
             Form {
                 if let entry {
+                    if isSigning {
+                        progressSection
+                    }
                     presetSection
                     certificateSection
                     identitySection(entry: entry)
-                    appearanceSection
-                    modifiersSection
-                    tweaksSection
-                    entitlementsSection
-                    advancedSection
+                    SigningOptionsEditor(options: $options, certificateID: certificateID)
                 }
             }
             .siScreen()
@@ -102,14 +102,14 @@ struct SigningSheetView: View {
                 Label("Save Current as Preset", systemImage: "square.and.arrow.down.on.square")
             }
         } header: {
-            Text("Presets")
+            Label("Presets", systemImage: "slider.horizontal.3")
         }
     }
 
     private var certificateSection: some View {
         Section {
             if certificateStore.certificates.isEmpty {
-                Text("Add a certificate in the Certificates tab first.")
+                Text("Add a certificate in Settings first.")
                     .font(SIFont.caption)
                     .foregroundStyle(SIColor.danger)
             } else {
@@ -123,7 +123,7 @@ struct SigningSheetView: View {
                 }
             }
         } header: {
-            Text("Certificate")
+            Label("Certificate", systemImage: "checkmark.seal.fill")
         }
     }
 
@@ -161,120 +161,17 @@ struct SigningSheetView: View {
             TextField("Minimum iOS Version", text: $options.minimumOSVersion)
                 .keyboardType(.numbersAndPunctuation)
         } header: {
-            Text("Identity")
+            Label("Identity", systemImage: "person.text.rectangle.fill")
         } footer: {
             Text("Original bundle ID: \(entry.originalBundleIdentifier ?? entry.bundleIdentifier)")
         }
     }
 
-    private var appearanceSection: some View {
+    private var progressSection: some View {
         Section {
-            Picker("Appearance", selection: $options.appearance) {
-                ForEach(AppAppearance.allCases) { appearance in
-                    Text(appearance.displayName).tag(appearance)
-                }
-            }
-            Picker("Design", selection: $options.liquidGlassMode) {
-                ForEach(LiquidGlassMode.allCases) { mode in
-                    Text(mode.displayName).tag(mode)
-                }
-            }
+            signingProgressFooter
         } header: {
-            Text("Appearance")
-        } footer: {
-            Text("Design forces an app to use, or not use, iOS 26's Liquid Glass redesign. Not every app supports being switched either way.")
-        }
-    }
-
-    private var modifiersSection: some View {
-        Section {
-            Toggle("Remove App Extensions", isOn: $options.removePlugins)
-            Toggle("Remove Watch App", isOn: $options.removeWatchApp)
-            Toggle("Remove Embedded Provisioning", isOn: $options.removeProvisioningProfile)
-            Toggle("Remove Localizations Except English", isOn: $options.removeLocalizations)
-            Toggle("Remove URL Schemes", isOn: $options.removeURLSchemes)
-            Toggle("iTunes File Sharing", isOn: $options.forceFileSharing)
-            Toggle("Files App Access", isOn: $options.forceDocumentBrowser)
-            Toggle("Force Full Screen", isOn: $options.forceFullScreen)
-            Toggle("Force ProMotion (120Hz)", isOn: $options.forceProMotion)
-            Toggle("Force Game Mode", isOn: $options.forceGameMode)
-            Toggle("Allow Arbitrary Network Loads", isOn: $options.allowArbitraryLoads)
-            Toggle("Force Localized Display Name", isOn: $options.forceLocalizedDisplayName)
-        } header: {
-            Text("Modifiers")
-        } footer: {
-            Text("Force Localized Display Name overrides the app name shown under every language the app supports, not just the default one.")
-        }
-    }
-
-    private var tweaksSection: some View {
-        Section {
-            if dylibStore.dylibs.isEmpty {
-                Text("No tweaks imported yet. Add .dylib or .deb files from Settings → Tweak Library.")
-                    .font(SIFont.caption)
-                    .foregroundStyle(SIColor.textSecondary)
-            } else {
-                ForEach(dylibStore.dylibs) { dylib in
-                    Toggle(isOn: Binding(
-                        get: { options.injectedDylibIDs.contains(dylib.id) },
-                        set: { isOn in
-                            if isOn {
-                                options.injectedDylibIDs.append(dylib.id)
-                            } else {
-                                options.injectedDylibIDs.removeAll { $0 == dylib.id }
-                            }
-                        }
-                    )) {
-                        VStack(alignment: .leading) {
-                            Text(dylib.displayName)
-                            Text(dylib.displaySize).font(SIFont.caption).foregroundStyle(SIColor.textSecondary)
-                        }
-                    }
-                }
-            }
-            Toggle("Inject Weakly", isOn: $options.weakInjection)
-            Toggle("Inject into Extensions", isOn: $options.injectIntoExtensions)
-        } header: {
-            Text("Tweaks")
-        }
-    }
-
-    private var entitlementsSection: some View {
-        Section {
-            NavigationLink {
-                EntitlementsEditorView(
-                    text: Binding(
-                        get: { options.entitlements ?? "" },
-                        set: { options.entitlements = $0.isEmpty ? nil : $0 }
-                    ),
-                    certificateID: certificateID
-                )
-            } label: {
-                HStack {
-                    Text("Entitlements")
-                    Spacer()
-                    Text(options.entitlements == nil ? String(localized: "From Provisioning Profile") : String(localized: "Customized"))
-                        .foregroundStyle(SIColor.textSecondary)
-                }
-            }
-        } header: {
-            Text("Entitlements")
-        } footer: {
-            Text("Leave this untouched to sign with the entitlements baked into your provisioning profile.")
-        }
-    }
-
-    private var advancedSection: some View {
-        Section {
-            Toggle("Use Instant-Resign Cache", isOn: $options.useCache)
-            Toggle("Force Re-sign (skip zsign's own cache)", isOn: $options.stripExistingSignature)
-            Toggle("Install After Signing", isOn: $options.installAfterSigning)
-        } header: {
-            Text("Advanced")
-        } footer: {
-            if isSigning {
-                signingProgressFooter
-            }
+            Label("Progress", systemImage: "bolt.fill")
         }
     }
 
@@ -300,10 +197,9 @@ struct SigningSheetView: View {
     private func prepareDefaults() {
         guard let entry else { return }
         certificateID = certificateStore.defaultCertificateID ?? certificateStore.certificates.first?.id
-        if options.displayName.isEmpty { options.displayName = entry.name }
-        if options.version.isEmpty { options.version = entry.version }
-        if options.build.isEmpty { options.build = entry.build }
-        if options.minimumOSVersion.isEmpty { options.minimumOSVersion = entry.minimumOSVersion }
+        guard !hasSeededDefaults else { return }
+        hasSeededDefaults = true
+        options = defaultsStore.makeOptions(seededWith: entry)
     }
 
     private func sign() {
