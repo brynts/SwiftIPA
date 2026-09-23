@@ -13,13 +13,21 @@
       "iconURL": "https://raw.githubusercontent.com/xsxs18-dev/SwiftIPA/main/SwiftIPA/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png",
       "tintColor": "#FF9F0A",
       "category": "utilities",
-      "version": "1.1.1",
+      "version": "1.2.0",
       "versionDate": "2026-09-23",
-      "versionDescription": "- Fix the itms-services manifest URL losing its fetchurl parameter to under-escaping, and add a localhost fallback for the no-profile install path\n- Update AltStore source for build 19",
-      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-20/SwiftIPA-unsigned.ipa",
-      "size": 3091371,
+      "versionDescription": "- Make the instant-resign cache actually instant via hard links instead of double file copies, fix download progress staying stuck at 0% when a server omits Content-Length, and bring the README up to date with how install actually works now\n- Update AltStore source for build 20",
+      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-21/SwiftIPA-unsigned.ipa",
+      "size": 3096216,
       "minOSVersion": "16.0",
       "versions": [
+        {
+          "version": "1.2.0",
+          "date": "2026-09-23",
+          "localizedDescription": "- Make the instant-resign cache actually instant via hard links instead of double file copies, fix download progress staying stuck at 0% when a server omits Content-Length, and bring the README up to date with how install actually works now\n- Update AltStore source for build 20",
+          "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-21/SwiftIPA-unsigned.ipa",
+          "size": 3096216,
+          "minOSVersion": "16.0"
+        },
         {
           "version": "1.1.1",
           "date": "2026-09-23",
