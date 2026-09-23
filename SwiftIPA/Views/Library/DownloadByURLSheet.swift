@@ -2,9 +2,17 @@ import SwiftUI
 
 struct DownloadByURLSheet: View {
     @State private var urlText = ""
+    @State private var isDownloading = false
     @State private var progress: Double?
+    @State private var downloadedBytes: Int64 = 0
     @State private var errorMessage: String?
     @Environment(\.dismiss) private var dismiss
+
+    private let byteFormatter: ByteCountFormatter = {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        return formatter
+    }()
 
     var body: some View {
         NavigationStack {
@@ -14,17 +22,24 @@ struct DownloadByURLSheet: View {
                         .keyboardType(.URL)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-                        .disabled(progress != nil)
+                        .disabled(isDownloading)
                 } header: {
                     Text("IPA URL")
                 }
 
-                if let progress {
+                if isDownloading {
                     Section {
-                        ProgressView(value: progress)
-                        Text("\(Int(progress * 100))%")
-                            .font(SIFont.caption)
-                            .foregroundStyle(SIColor.textSecondary)
+                        if let progress {
+                            ProgressView(value: progress)
+                            Text("\(Int(progress * 100))%")
+                                .font(SIFont.caption)
+                                .foregroundStyle(SIColor.textSecondary)
+                        } else {
+                            ProgressView()
+                            Text(byteFormatter.string(fromByteCount: downloadedBytes))
+                                .font(SIFont.caption)
+                                .foregroundStyle(SIColor.textSecondary)
+                        }
                     }
                 }
 
@@ -45,7 +60,7 @@ struct DownloadByURLSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Download") { startDownload() }
-                        .disabled(URL(string: urlText) == nil || progress != nil)
+                        .disabled(URL(string: urlText) == nil || isDownloading)
                 }
             }
         }
@@ -53,47 +68,85 @@ struct DownloadByURLSheet: View {
 
     private func startDownload() {
         guard let url = URL(string: urlText) else { return }
+        isDownloading = true
         progress = 0
+        downloadedBytes = 0
         errorMessage = nil
 
         Task {
             do {
-                let (bytes, response) = try await URLSession.shared.bytes(from: url)
-                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                    throw RepositoryServiceError.invalidResponse
-                }
-                let expected = httpResponse.expectedContentLength
-                let destination = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).ipa")
-                FileManager.default.createFile(atPath: destination.path, contents: nil)
-                let handle = try FileHandle(forWritingTo: destination)
-
-                var received: Int64 = 0
-                var buffer = Data()
-                for try await byte in bytes {
-                    buffer.append(byte)
-                    if buffer.count >= 262_144 {
-                        handle.write(buffer)
-                        received += Int64(buffer.count)
-                        buffer.removeAll(keepingCapacity: true)
-                        if expected > 0 {
-                            let value = Double(received) / Double(expected)
-                            await MainActor.run { progress = value }
-                        }
+                let downloader = ProgressReportingDownloader { fraction, bytesWritten in
+                    Task { @MainActor in
+                        progress = fraction
+                        downloadedBytes = bytesWritten
                     }
                 }
-                if !buffer.isEmpty { handle.write(buffer) }
-                try? handle.close()
+                let downloaded = try await downloader.download(from: url)
+                defer { try? FileManager.default.removeItem(at: downloaded) }
 
-                _ = try await AppLibraryStore.shared.importIPA(at: destination, sourceName: url.host)
-                try? FileManager.default.removeItem(at: destination)
+                _ = try await AppLibraryStore.shared.importIPA(at: downloaded, sourceName: url.host)
 
                 await MainActor.run { dismiss() }
             } catch {
                 await MainActor.run {
+                    isDownloading = false
                     progress = nil
                     errorMessage = error.localizedDescription
                 }
             }
+        }
+    }
+}
+
+private final class ProgressReportingDownloader: NSObject, URLSessionDownloadDelegate {
+    private var continuation: CheckedContinuation<URL, Error>?
+    private let onProgress: (Double?, Int64) -> Void
+    private var session: URLSession?
+
+    init(onProgress: @escaping (Double?, Int64) -> Void) {
+        self.onProgress = onProgress
+    }
+
+    func download(from url: URL) async throws -> URL {
+        try await withCheckedThrowingContinuation { continuation in
+            self.continuation = continuation
+            let session = URLSession(configuration: .default, delegate: self, delegateQueue: nil)
+            self.session = session
+            session.downloadTask(with: url).resume()
+        }
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        downloadTask: URLSessionDownloadTask,
+        didWriteData bytesWritten: Int64,
+        totalBytesWritten: Int64,
+        totalBytesExpectedToWrite: Int64
+    ) {
+        let fraction = totalBytesExpectedToWrite > 0 ? Double(totalBytesWritten) / Double(totalBytesExpectedToWrite) : nil
+        onProgress(fraction, totalBytesWritten)
+    }
+
+    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
+        guard let httpResponse = downloadTask.response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            continuation?.resume(throwing: RepositoryServiceError.invalidResponse)
+            continuation = nil
+            return
+        }
+        let destination = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).ipa")
+        do {
+            try FileManager.default.replaceItem(at: destination, withItemAt: location)
+            continuation?.resume(returning: destination)
+        } catch {
+            continuation?.resume(throwing: error)
+        }
+        continuation = nil
+    }
+
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        if let error {
+            continuation?.resume(throwing: error)
+            continuation = nil
         }
     }
 }

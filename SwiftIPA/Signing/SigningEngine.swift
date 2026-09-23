@@ -86,7 +86,7 @@ actor SigningEngine {
             if let cached = cache.cachedIPA(for: key) {
                 await MainActor.run { job.status = .cached }
                 let tempCopy = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).ipa")
-                try FileManager.default.copyItem(at: cached, to: tempCopy)
+                try FileManager.default.replaceItem(at: tempCopy, withItemAt: cached)
                 await MainActor.run { job.status = .done(0) }
                 return tempCopy
             }

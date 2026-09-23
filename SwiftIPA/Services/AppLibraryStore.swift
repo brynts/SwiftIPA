@@ -82,10 +82,7 @@ final class AppLibraryStore: ObservableObject {
         guard let destination = await MainActor.run(body: { apps.first(where: { $0.id == entryID }).map(ipaURL) }) else { return }
 
         try await Task.detached(priority: .userInitiated) {
-            if FileManager.default.fileExists(atPath: destination.path) {
-                try FileManager.default.removeItem(at: destination)
-            }
-            try FileManager.default.copyItem(at: signedIPAURL, to: destination)
+            try FileManager.default.replaceItem(at: destination, withItemAt: signedIPAURL)
         }.value
 
         let size = (try? FileManager.default.attributesOfItem(atPath: destination.path)[.size] as? Int64) ?? 0

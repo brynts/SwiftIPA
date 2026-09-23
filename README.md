@@ -16,7 +16,7 @@
 
 Every sideloading app does roughly the same thing: unpack an IPA, rewrite a few plist values, sign the binaries, zip it back up. What they don't do is make that fast, and they don't make it feel like it belongs on your phone. SwiftIPA is my answer to both: the actual signing work runs through [zsign](https://github.com/zhlynn/zsign) compiled straight into the app, resigning something you already signed once is instant instead of redone from scratch, and signing a batch of apps uses every core on your device instead of one at a time.
 
-Everything happens on-device. There's no backend, no account, no telemetry. The only network calls SwiftIPA ever makes are the ones you ask for: downloading an IPA from a URL you gave it, fetching a source repo you added, or checking this repo's GitHub releases from Settings.
+Everything happens on-device. There's no backend, no account, no telemetry. The only network calls SwiftIPA ever makes are the ones you ask for: downloading an IPA from a URL you gave it, fetching a source repo you added, checking this repo's GitHub releases from Settings, or — only while you're actually installing — handing a manifest pointer to the relay described below.
 
 <br>
 
@@ -57,15 +57,19 @@ Inject a `.dylib` or `.deb`. Strip extensions, the Watch app, or embedded provis
 </tr>
 </table>
 
-**📲 Install without a cable** — SwiftIPA runs a local HTTPS server on your device and hands iOS a real OTA manifest, so tapping "Install" goes straight from your library onto your Home Screen over Wi-Fi. No AltServer, no Mac required (though "Export IPA" is right there too, for AltStore, Sideloadly, or TrollStore).
+**📲 Install without a cable** — tap "Install," stay on Wi-Fi, and the app lands on your Home Screen. No certificate to trust, no configuration profile, no AltServer, no Mac (though "Export IPA" is right there too, for AltStore, Sideloadly, or TrollStore).
 
 **🎨 Same look as my other apps** — same design system as [FileManager](https://github.com/xsxs18-dev/FileManager) and [HTMLViewer](https://github.com/xsxs18-dev/HTMLViewer): six built-in themes — orange & black by default, plus light blue and red, each in dark and light — same spacing and type scale.
 
 <br>
 
-## A note on the local install server
+## How on-device install actually works
 
-The first time you install straight from SwiftIPA, iOS will ask you to trust its local certificate (Settings → General → VPN & Device Management → SwiftIPA Local Server → Trust). That certificate is generated once, on your device, the first time you use it, and it never leaves it — it only exists to let iOS talk to the tiny HTTPS server SwiftIPA runs on itself for the length of the install. This is the same mechanism every self-hosted OTA installer uses; there's no way around the one-time trust step on stock iOS.
+iOS installs apps over Wi-Fi through `itms-services://`, but it only trusts a manifest that's served from a real, publicly-trusted HTTPS domain — a manifest served straight from your phone gets silently ignored. SwiftIPA's default install path works around that without asking you to trust anything: the app you just signed is served from a tiny server running on your own device, and only the small `manifest.plist` pointer — bundle ID, version, and a link back to your device — is handed off through [`api.palera.in`](https://api.palera.in), a small public relay built for exactly this. Your `.ipa` itself never leaves your phone; the relay only ever sees a URL, not your app.
+
+If that path can't reach your device — some routers isolate clients from each other — SwiftIPA can retry over `localhost` instead of your Wi-Fi address, no settings menu required, right from the same install screen.
+
+There's also a fully local fallback that needs no third party at all: a self-signed certificate generated once on your device (Settings → General → VPN & Device Management → SwiftIPA Local Server → Trust), after which installs go straight from phone to phone with nothing else involved. It's one extra step, so it's the fallback, not the default.
 
 <br>
 
@@ -107,7 +111,7 @@ zsign's C++ source isn't vendored directly in this repo — the fetch script clo
 | Crypto / X.509 | OpenSSL (headers vendored, linked via [krzyzanowskim/OpenSSL](https://github.com/krzyzanowskim/OpenSSL)), `CryptoKit` for hashing |
 | ZIP | [`ZIPFoundation`](https://github.com/weichsel/ZIPFoundation) |
 | Certificates & Keychain | `Security` framework — `SecPKCS12Import`, `CMSDecoder` for provisioning profiles, Keychain for p12 passwords |
-| Local install server | `Network` framework (`NWListener` + TLS) with a self-signed identity generated on-device |
+| Local install server | `Network` framework (`NWListener` + TLS), self-signed identity generated on-device for the fallback path, [`api.palera.in`](https://api.palera.in) for the default manifest relay |
 | Mach-O inspection | a small hand-written parser (`Signing/MachO.swift`) — architectures, encryption, linked dylibs, rpaths |
 | Localization | a String Catalog (`Localizable.xcstrings`), English source + German, follows your system language |
 | App ↔ Share Extension | the system pasteboard, no App Group, no extra entitlements |
@@ -127,9 +131,11 @@ SwiftIPA/
 │   └── ZSign/       the Objective-C++ bridge into zsign
 ├── Services/       AppLibraryStore, CertificateStore, CertificateService,
 │                   DylibLibraryStore, PresetStore, SourceStore, RepositoryService,
-│                   InstallServer, LocalServerIdentity, InspectorService,
-│                   KeychainStore, ThemeManager, UpdateChecker
-├── Shared/         InboxStore (shared with the extension), FileHashing
+│                   DefaultSigningOptionsStore, InstallServer, LocalServerIdentity,
+│                   InspectorService, KeychainStore, ThemeManager, UpdateChecker
+├── Shared/         InboxStore (shared with the extension), FileHashing,
+│                   FileManager+Replace (hard-link-first file replace, keeps
+│                   cache hits and re-signs off the disk-copy path)
 ├── Views/          screens and sheets, grouped by tab
 └── Resources/      Assets.xcassets, Info.plist, Localizable.xcstrings
 
@@ -149,7 +155,8 @@ project.yml         XcodeGen project definition
 <summary>Click to expand</summary>
 
 - `.deb` tweak packages only unpack if they use gzip compression (`data.tar.gz`) — the vast majority do, but a `.deb` compressed with `xz` or `zstd` will get rejected with a clear error instead of silently failing. Re-export it as a raw `.dylib` and it'll work.
-- The local install server binds to your device's Wi-Fi address, so it needs you to actually be on Wi-Fi — it won't work over cellular-only or a USB-tethered connection.
+- The local install server needs you to actually be on Wi-Fi — it won't work over cellular-only or a USB-tethered connection. If your router isolates clients from each other, switch to the `localhost` retry right on the install screen.
+- The default (no-certificate) install path depends on a third-party relay being up. If it's ever down, the certificate-based fallback still works fully offline.
 - Revocation checking is limited to what's visible in the provisioning profile and certificate expiry dates; it doesn't call out to Apple's OCSP responder.
 - The Share Extension's own UI is English-only for now, regardless of your system language — only the main app is fully localized.
 - No landscape-optimized layout yet, and no iPad-specific split view.

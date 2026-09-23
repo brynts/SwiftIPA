@@ -45,8 +45,7 @@ final class SigningCache {
             var index = readIndex()
             let fileName = "\(key).ipa"
             let destination = directory.appendingPathComponent(fileName)
-            try? FileManager.default.removeItem(at: destination)
-            guard (try? FileManager.default.copyItem(at: ipaURL, to: destination)) != nil else { return }
+            guard (try? FileManager.default.replaceItem(at: destination, withItemAt: ipaURL)) != nil else { return }
 
             let size = (try? FileManager.default.attributesOfItem(atPath: destination.path)[.size] as? Int64) ?? 0
             index[key] = SigningCacheEntry(key: key, ipaFileName: fileName, createdAt: Date(), byteSize: size)
