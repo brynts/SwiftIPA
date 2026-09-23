@@ -15,11 +15,19 @@
       "category": "utilities",
       "version": "1.1.0",
       "versionDate": "2026-09-23",
-      "versionDescription": "- Trigger install via an embedded Safari view loading a local HTML redirect page instead of opening itms-services:// directly from app code, matching Feather's approach for iOS versions that restrict direct itms-services opens without special entitlements\n- Update AltStore source for build 13",
-      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-14/SwiftIPA-unsigned.ipa",
-      "size": 3080425,
+      "versionDescription": "- Switch IPA import from SwiftUI's native fileImporter to the same UIDocumentPickerViewController wrapper already used for certificates and tweaks, since fileImporter's Open button wasn't confirming a selection regardless of source folder while the other import paths worked fine\n- Update AltStore source for build 14",
+      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-15/SwiftIPA-unsigned.ipa",
+      "size": 3080003,
       "minOSVersion": "16.0",
       "versions": [
+        {
+          "version": "1.1.0",
+          "date": "2026-09-23",
+          "localizedDescription": "- Switch IPA import from SwiftUI's native fileImporter to the same UIDocumentPickerViewController wrapper already used for certificates and tweaks, since fileImporter's Open button wasn't confirming a selection regardless of source folder while the other import paths worked fine\n- Update AltStore source for build 14",
+          "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-15/SwiftIPA-unsigned.ipa",
+          "size": 3080003,
+          "minOSVersion": "16.0"
+        },
         {
           "version": "1.1.0",
           "date": "2026-09-23",
