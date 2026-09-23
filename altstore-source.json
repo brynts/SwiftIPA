@@ -13,13 +13,21 @@
       "iconURL": "https://raw.githubusercontent.com/xsxs18-dev/SwiftIPA/main/SwiftIPA/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png",
       "tintColor": "#FF9F0A",
       "category": "utilities",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "versionDate": "2026-09-23",
-      "versionDescription": "- Remove the leftover status text from the install redirect page, leaving a blank screen during the instant handoff\n- Update AltStore source for build 21",
-      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-22/SwiftIPA-unsigned.ipa",
-      "size": 3096204,
+      "versionDescription": "- Add a Storage section to open the app's Documents folder in Files, and a Reset section for clearing signed apps, imported apps, certificates, or everything\n- Update AltStore source for build 22",
+      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-23/SwiftIPA-unsigned.ipa",
+      "size": 3107512,
       "minOSVersion": "16.0",
       "versions": [
+        {
+          "version": "1.3.0",
+          "date": "2026-09-23",
+          "localizedDescription": "- Add a Storage section to open the app's Documents folder in Files, and a Reset section for clearing signed apps, imported apps, certificates, or everything\n- Update AltStore source for build 22",
+          "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-23/SwiftIPA-unsigned.ipa",
+          "size": 3107512,
+          "minOSVersion": "16.0"
+        },
         {
           "version": "1.2.0",
           "date": "2026-09-23",
