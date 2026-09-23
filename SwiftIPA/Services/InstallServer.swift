@@ -66,7 +66,8 @@ final class InstallServer {
         appName: String,
         bundleIdentifier: String,
         version: String,
-        mode: InstallMode
+        mode: InstallMode,
+        preferLoopback: Bool = false
     ) async throws -> InstallLink {
         stop()
 
@@ -78,8 +79,12 @@ final class InstallServer {
         self.port = mode.useSecureConnection ? 8443 : 8442
         self.currentMode = mode
 
-        guard let address = Self.wifiIPAddress() else { throw InstallServerError.noAddress }
-        self.host = address
+        if preferLoopback {
+            self.host = "127.0.0.1"
+        } else {
+            guard let address = Self.wifiIPAddress() else { throw InstallServerError.noAddress }
+            self.host = address
+        }
 
         let parameters: NWParameters
         if mode.useSecureConnection {
@@ -198,9 +203,15 @@ final class InstallServer {
         }
     }
 
+    private static let unreservedURLCharacters: CharacterSet = {
+        var set = CharacterSet.alphanumerics
+        set.insert(charactersIn: "-._~")
+        return set
+    }()
+
     private var itmsServicesLink: String {
         let manifestString = manifestSourceURL.absoluteString
-        let encoded = manifestString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? manifestString
+        let encoded = manifestString.addingPercentEncoding(withAllowedCharacters: Self.unreservedURLCharacters) ?? manifestString
         return "itms-services://?action=download-manifest&url=\(encoded)"
     }
 

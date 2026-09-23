@@ -8,6 +8,7 @@ struct InstallProgressView: View {
     @State private var isPreparing = true
     @State private var showingTrustSheet = false
     @State private var isUsingFallback = false
+    @State private var isUsingLoopback = false
     @State private var showingSafari = false
 
     @Environment(\.dismiss) private var dismiss
@@ -30,10 +31,17 @@ struct InstallProgressView: View {
                         .foregroundStyle(SIColor.textSecondary)
                         .padding(.horizontal, SISpacing.xl)
                     if !isUsingFallback {
-                        Button("Try the Certificate Method Instead") {
-                            Task { await startServer(useFallback: true) }
+                        if !isUsingLoopback {
+                            Button("Try Localhost Instead") {
+                                Task { await startServer(useFallback: false, useLoopback: true) }
+                            }
+                            .buttonStyle(.siPrimaryWide)
+                            .padding(.horizontal, SISpacing.xl)
                         }
-                        .buttonStyle(.siPrimaryWide)
+                        Button("Try the Certificate Method Instead") {
+                            Task { await startServer(useFallback: true, useLoopback: false) }
+                        }
+                        .buttonStyle(.siSecondary)
                         .padding(.horizontal, SISpacing.xl)
                     }
                 } else if let installLink {
@@ -62,13 +70,17 @@ struct InstallProgressView: View {
                     .buttonStyle(.siPrimaryWide)
                     .padding(.horizontal, SISpacing.xl)
                     if !isUsingFallback {
-                        Button("Didn't Work? Try the Certificate Method") {
-                            Task { await startServer(useFallback: true) }
+                        Button(isUsingLoopback ? "Didn't Work? Try This Device's Wi-Fi Address" : "Didn't Work? Try Localhost Instead") {
+                            Task { await startServer(useFallback: false, useLoopback: !isUsingLoopback) }
+                        }
+                        .buttonStyle(.siSecondary)
+                        Button("Try the Certificate Method Instead") {
+                            Task { await startServer(useFallback: true, useLoopback: false) }
                         }
                         .buttonStyle(.siSecondary)
                     } else {
                         Button("Try Without a Certificate Instead") {
-                            Task { await startServer(useFallback: false) }
+                            Task { await startServer(useFallback: false, useLoopback: false) }
                         }
                         .buttonStyle(.siSecondary)
                     }
@@ -98,7 +110,7 @@ struct InstallProgressView: View {
                 }
             }
             .task {
-                await startServer(useFallback: false)
+                await startServer(useFallback: false, useLoopback: false)
             }
         }
     }
@@ -131,13 +143,14 @@ struct InstallProgressView: View {
         }
     }
 
-    private func startServer(useFallback: Bool) async {
+    private func startServer(useFallback: Bool, useLoopback: Bool) async {
         guard let entry else { return }
         await MainActor.run {
             isPreparing = true
             errorMessage = nil
             installLink = nil
             isUsingFallback = useFallback
+            isUsingLoopback = useLoopback
         }
         do {
             let link = try await InstallServer.shared.startInstall(
@@ -145,7 +158,8 @@ struct InstallProgressView: View {
                 appName: entry.name,
                 bundleIdentifier: entry.bundleIdentifier,
                 version: entry.displayVersion,
-                mode: useFallback ? .secureDirect : .externalManifest
+                mode: useFallback ? .secureDirect : .externalManifest,
+                preferLoopback: useLoopback
             )
             await MainActor.run {
                 installLink = link

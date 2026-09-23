@@ -551,16 +551,6 @@
         }
       }
     },
-    "Didn't Work? Try the Certificate Method": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hat nicht geklappt? Zertifikat-Methode versuchen"
-          }
-        }
-      }
-    },
     "Disable Liquid Glass": {
       "localizations": {
         "de": {
@@ -2617,6 +2607,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "keine Watch-App"
+          }
+        }
+      }
+    },
+    "Try Localhost Instead": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stattdessen Localhost versuchen"
+          }
+        }
+      }
+    },
+    "Didn't Work? Try This Device's Wi-Fi Address": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hat nicht geklappt? WLAN-Adresse dieses Geräts versuchen"
+          }
+        }
+      }
+    },
+    "Didn't Work? Try Localhost Instead": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hat nicht geklappt? Stattdessen Localhost versuchen"
           }
         }
       }
