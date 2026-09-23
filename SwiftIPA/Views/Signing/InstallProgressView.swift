@@ -8,6 +8,7 @@ struct InstallProgressView: View {
     @State private var isPreparing = true
     @State private var showingTrustSheet = false
     @State private var isUsingFallback = false
+    @State private var showingSafari = false
 
     @Environment(\.dismiss) private var dismiss
 
@@ -45,10 +46,14 @@ struct InstallProgressView: View {
                         trustSteps
                     }
                     Button("Install Now") {
-                        UIApplication.shared.open(installURL)
+                        showingSafari = true
                     }
                     .buttonStyle(.siPrimaryWide)
                     .padding(.horizontal, SISpacing.xl)
+                    Button("Open in Safari Instead") {
+                        UIApplication.shared.open(installURL)
+                    }
+                    .buttonStyle(.siSecondary)
                     if !isUsingFallback {
                         Button("Didn't Work? Try Wi-Fi Method") {
                             Task { await startServer(useFallback: true) }
@@ -72,6 +77,12 @@ struct InstallProgressView: View {
             .sheet(isPresented: $showingTrustSheet) {
                 if let certURL = try? LocalServerIdentity.exportTrustCertificate() {
                     ShareSheet(items: [certURL])
+                }
+            }
+            .fullScreenCover(isPresented: $showingSafari) {
+                if let installURL {
+                    SafariView(url: installURL)
+                        .ignoresSafeArea()
                 }
             }
             .task {

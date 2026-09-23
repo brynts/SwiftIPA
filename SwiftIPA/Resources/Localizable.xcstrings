@@ -1381,6 +1381,16 @@
         }
       }
     },
+    "Open in Safari Instead": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stattdessen in Safari öffnen"
+          }
+        }
+      }
+    },
     "Open the saved file — iOS will offer to install a profile.": {
       "localizations": {
         "de": {

@@ -88,9 +88,8 @@ final class InstallServer {
 
                 switch state {
                 case .ready:
-                    let manifestURL = "\(self.scheme)://\(self.host):\(self.port)/manifest.plist"
-                    let itms = "itms-services://?action=download-manifest&url=\(manifestURL.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? manifestURL)"
-                    continuation.resume(returning: URL(string: itms)!)
+                    let pageURL = "\(self.scheme)://\(self.host):\(self.port)/install"
+                    continuation.resume(returning: URL(string: pageURL)!)
                 case .failed(let error):
                     continuation.resume(throwing: InstallServerError.listenerFailed(error.localizedDescription))
                 default:
@@ -143,10 +142,32 @@ final class InstallServer {
             sendManifest(on: connection)
         } else if path.hasPrefix("/app.ipa") {
             sendIPA(on: connection)
+        } else if path.hasPrefix("/install") {
+            sendInstallPage(on: connection)
         } else {
             let body = "Not Found".data(using: .utf8)!
             sendResponse(status: "404 Not Found", contentType: "text/plain", body: body, on: connection)
         }
+    }
+
+    private var itmsServicesLink: String {
+        let manifestURL = "\(scheme)://\(host):\(port)/manifest.plist"
+        let encoded = manifestURL.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? manifestURL
+        return "itms-services://?action=download-manifest&url=\(encoded)"
+    }
+
+    private func sendInstallPage(on connection: NWConnection) {
+        let html = """
+        <!DOCTYPE html>
+        <html>
+        <head><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+        <body style="background:#000;color:#fff;font-family:-apple-system;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">
+        <p>Starting installation…</p>
+        <script>window.location = "\(itmsServicesLink)";</script>
+        </body>
+        </html>
+        """
+        sendResponse(status: "200 OK", contentType: "text/html", body: Data(html.utf8), on: connection)
     }
 
     private func sendManifest(on connection: NWConnection) {
