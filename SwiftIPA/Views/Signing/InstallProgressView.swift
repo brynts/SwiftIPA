@@ -22,63 +22,74 @@ struct InstallProgressView: View {
             VStack(spacing: SISpacing.lg) {
                 if isPreparing {
                     ProgressView("Starting local server…")
+                        .transition(.opacity)
                 } else if let errorMessage {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 40))
-                        .foregroundStyle(SIColor.danger)
-                    Text(errorMessage)
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(SIColor.textSecondary)
-                        .padding(.horizontal, SISpacing.xl)
-                    if !isUsingFallback {
-                        if !isUsingLoopback {
-                            Button("Try Localhost Instead") {
-                                Task { await startServer(useFallback: false, useLoopback: true) }
-                            }
-                            .buttonStyle(.siPrimaryWide)
-                            .padding(.horizontal, SISpacing.xl)
-                        }
-                        Button("Try the Certificate Method Instead") {
-                            Task { await startServer(useFallback: true, useLoopback: false) }
-                        }
-                        .buttonStyle(.siSecondary)
-                        .padding(.horizontal, SISpacing.xl)
-                    }
-                } else if let installLink {
-                    Image(systemName: "wifi")
-                        .font(.system(size: 40))
-                        .foregroundStyle(SIColor.accent)
-                    Text("Ready to install.")
-                        .font(SIFont.headline)
-                    if isUsingFallback {
-                        trustSteps
-                    } else {
-                        Text("No certificate, no profile — this uses a small public relay just to hand iOS a properly hosted install manifest. Your IPA itself never leaves your device.")
-                            .font(SIFont.caption)
-                            .foregroundStyle(SIColor.textSecondary)
+                    Group {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 40))
+                            .foregroundStyle(SIColor.danger)
+                        Text(errorMessage)
                             .multilineTextAlignment(.center)
+                            .foregroundStyle(SIColor.textSecondary)
                             .padding(.horizontal, SISpacing.xl)
-                    }
-                    Button("Install Now") {
-                        switch installLink.presentationStyle {
-                        case .direct:
-                            UIApplication.shared.open(installLink.url)
-                        case .webView:
-                            backgroundLoadURL = installLink.url
+                        if !isUsingFallback {
+                            if !isUsingLoopback {
+                                Button("Try Localhost Instead") {
+                                    Task { await startServer(useFallback: false, useLoopback: true) }
+                                }
+                                .buttonStyle(.siPrimaryWide)
+                                .padding(.horizontal, SISpacing.xl)
+                            }
+                            Button("Try the Certificate Method Instead") {
+                                Task { await startServer(useFallback: true, useLoopback: false) }
+                            }
+                            .buttonStyle(.siSecondary)
+                            .padding(.horizontal, SISpacing.xl)
                         }
                     }
-                    .buttonStyle(.siPrimaryWide)
-                    .padding(.horizontal, SISpacing.xl)
-                    if isUsingFallback {
-                        Button("Try Without a Certificate Instead") {
-                            Task { await startServer(useFallback: false, useLoopback: false) }
+                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                } else if let installLink {
+                    Group {
+                        Image(systemName: "wifi")
+                            .font(.system(size: 40))
+                            .foregroundStyle(SIColor.accent)
+                        Text("Ready to install.")
+                            .font(SIFont.headline)
+                        if isUsingFallback {
+                            trustSteps
+                        } else {
+                            Text("No certificate, no profile — this uses a small public relay just to hand iOS a properly hosted install manifest. Your IPA itself never leaves your device.")
+                                .font(SIFont.caption)
+                                .foregroundStyle(SIColor.textSecondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, SISpacing.xl)
                         }
-                        .buttonStyle(.siSecondary)
+                        Button("Install Now") {
+                            switch installLink.presentationStyle {
+                            case .direct:
+                                UIApplication.shared.open(installLink.url)
+                            case .webView:
+                                backgroundLoadURL = installLink.url
+                            }
+                        }
+                        .buttonStyle(.siPrimaryWide)
+                        .padding(.horizontal, SISpacing.xl)
+                        if isUsingFallback {
+                            Button("Try Without a Certificate Instead") {
+                                Task { await startServer(useFallback: false, useLoopback: false) }
+                            }
+                            .buttonStyle(.siSecondary)
+                        }
                     }
+                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
                 }
             }
+            .animation(.easeOut(duration: 0.3), value: isPreparing)
+            .animation(.easeOut(duration: 0.3), value: errorMessage)
+            .animation(.easeOut(duration: 0.3), value: installLink?.url)
             .padding()
             .siScreen()
+            .presentationDragIndicator(.visible)
             .navigationTitle("Install")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

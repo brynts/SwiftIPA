@@ -57,6 +57,8 @@ struct SIPrimaryButtonStyle: ButtonStyle {
             .padding(.horizontal, SISpacing.md)
             .background(SIColor.accent.opacity(configuration.isPressed ? 0.7 : 1.0))
             .clipShape(RoundedRectangle(cornerRadius: SIRadius.sm, style: .continuous))
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }
 }
 
@@ -72,6 +74,8 @@ struct SISecondaryButtonStyle: ButtonStyle {
             .padding(.horizontal, SISpacing.md)
             .background(SIColor.accentMuted.opacity(configuration.isPressed ? 0.5 : 1.0))
             .clipShape(RoundedRectangle(cornerRadius: SIRadius.sm, style: .continuous))
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }
 }
 
@@ -80,6 +84,17 @@ struct SIIconButtonStyle: ButtonStyle {
         configuration.label
             .foregroundStyle(SIColor.accent)
             .opacity(configuration.isPressed ? 0.6 : 1.0)
+            .scaleEffect(configuration.isPressed ? 0.9 : 1.0)
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
+struct SIPressableCardStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .opacity(configuration.isPressed ? 0.85 : 1.0)
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }
 }
 
@@ -92,6 +107,7 @@ struct SICardBackground: ViewModifier {
                 RoundedRectangle(cornerRadius: SIRadius.md, style: .continuous)
                     .stroke(SIColor.border, lineWidth: 1)
             )
+            .shadow(color: .black.opacity(0.16), radius: 8, x: 0, y: 2)
     }
 }
 
@@ -125,4 +141,8 @@ extension ButtonStyle where Self == SISecondaryButtonStyle {
 
 extension ButtonStyle where Self == SIIconButtonStyle {
     static var siIcon: SIIconButtonStyle { SIIconButtonStyle() }
+}
+
+extension ButtonStyle where Self == SIPressableCardStyle {
+    static var siPressableCard: SIPressableCardStyle { SIPressableCardStyle() }
 }

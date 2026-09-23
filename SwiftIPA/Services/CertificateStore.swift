@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import UserNotifications
+import SwiftUI
 
 final class CertificateStore: ObservableObject {
     static let shared = CertificateStore()
@@ -89,7 +90,9 @@ final class CertificateStore: ObservableObject {
 
         KeychainStore.setPassword(password, forCertificateID: id)
         await MainActor.run {
-            certificates.append(certificate)
+            withAnimation(.easeOut(duration: 0.25)) {
+                certificates.append(certificate)
+            }
             if defaultCertificateID == nil {
                 setDefault(certificate.id)
             }
@@ -102,7 +105,9 @@ final class CertificateStore: ObservableObject {
         try? FileManager.default.removeItem(at: p12URL(for: certificate))
         try? FileManager.default.removeItem(at: provisionURL(for: certificate))
         KeychainStore.removePassword(forCertificateID: certificate.id)
-        certificates.removeAll { $0.id == certificate.id }
+        withAnimation(.easeOut(duration: 0.25)) {
+            certificates.removeAll { $0.id == certificate.id }
+        }
         if defaultCertificateID == certificate.id {
             defaultCertificateID = certificates.first?.id
             defaults.set(defaultCertificateID?.uuidString, forKey: defaultKey)
@@ -116,7 +121,9 @@ final class CertificateStore: ObservableObject {
             try? FileManager.default.removeItem(at: provisionURL(for: certificate))
             KeychainStore.removePassword(forCertificateID: certificate.id)
         }
-        certificates.removeAll()
+        withAnimation(.easeOut(duration: 0.25)) {
+            certificates.removeAll()
+        }
         defaultCertificateID = nil
         defaults.removeObject(forKey: defaultKey)
         persist()

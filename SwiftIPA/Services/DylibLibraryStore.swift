@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI
 
 final class DylibLibraryStore: ObservableObject {
     static let shared = DylibLibraryStore()
@@ -47,7 +48,9 @@ final class DylibLibraryStore: ObservableObject {
         let entry = InjectedDylib(fileName: importedURL.lastPathComponent, displayName: resolvedDisplayName, byteSize: size)
 
         await MainActor.run {
-            dylibs.append(entry)
+            withAnimation(.easeOut(duration: 0.25)) {
+                dylibs.append(entry)
+            }
             persist()
         }
         return entry
@@ -55,7 +58,9 @@ final class DylibLibraryStore: ObservableObject {
 
     func remove(_ dylib: InjectedDylib) {
         try? FileManager.default.removeItem(at: url(for: dylib))
-        dylibs.removeAll { $0.id == dylib.id }
+        withAnimation(.easeOut(duration: 0.25)) {
+            dylibs.removeAll { $0.id == dylib.id }
+        }
         persist()
     }
 
@@ -69,7 +74,9 @@ final class DylibLibraryStore: ObservableObject {
         for dylib in dylibs {
             try? FileManager.default.removeItem(at: url(for: dylib))
         }
-        dylibs.removeAll()
+        withAnimation(.easeOut(duration: 0.25)) {
+            dylibs.removeAll()
+        }
         persist()
     }
 

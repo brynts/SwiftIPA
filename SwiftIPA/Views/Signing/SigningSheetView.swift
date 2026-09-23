@@ -32,6 +32,7 @@ struct SigningSheetView: View {
                 if let entry {
                     if isSigning {
                         progressSection
+                            .transition(.opacity.combined(with: .move(edge: .top)))
                     }
                     presetSection
                     certificateSection
@@ -39,7 +40,9 @@ struct SigningSheetView: View {
                     SigningOptionsEditor(options: $options, certificateID: certificateID)
                 }
             }
+            .animation(.easeOut(duration: 0.25), value: isSigning)
             .siScreen()
+            .presentationDragIndicator(.visible)
             .navigationTitle("Sign")
             .navigationBarTitleDisplayMode(.inline)
             .disabled(isSigning)
@@ -169,7 +172,14 @@ struct SigningSheetView: View {
 
     private var progressSection: some View {
         Section {
-            signingProgressFooter
+            HStack(spacing: SISpacing.sm) {
+                if jobStatus.isInProgress {
+                    ProgressView()
+                }
+                signingProgressFooter
+                    .transition(.opacity)
+            }
+            .animation(.easeOut(duration: 0.2), value: jobStatus)
         } header: {
             Label("Progress", systemImage: "bolt.fill")
         }

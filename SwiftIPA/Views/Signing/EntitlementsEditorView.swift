@@ -14,6 +14,7 @@ struct EntitlementsEditorView: View {
                 .textInputAutocapitalization(.never)
                 .padding(SISpacing.sm)
                 .siScreen()
+                .presentationDragIndicator(.visible)
                 .navigationTitle("Entitlements")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {

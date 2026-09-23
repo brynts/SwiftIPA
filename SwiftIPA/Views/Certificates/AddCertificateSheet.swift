@@ -42,6 +42,7 @@ struct AddCertificateSheet: View {
                 }
             }
             .siScreen()
+            .presentationDragIndicator(.visible)
             .navigationTitle("Add Certificate")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

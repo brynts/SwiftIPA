@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI
 
 final class AppLibraryStore: ObservableObject {
     static let shared = AppLibraryStore()
@@ -34,7 +35,9 @@ final class AppLibraryStore: ObservableObject {
         }.value
 
         await MainActor.run {
-            apps.insert(entry, at: 0)
+            withAnimation(.easeOut(duration: 0.25)) {
+                apps.insert(entry, at: 0)
+            }
             persist()
         }
         return entry
@@ -105,7 +108,9 @@ final class AppLibraryStore: ObservableObject {
         if let iconURL = iconURL(for: entry) {
             try? FileManager.default.removeItem(at: iconURL)
         }
-        apps.removeAll { $0.id == entry.id }
+        withAnimation(.easeOut(duration: 0.25)) {
+            apps.removeAll { $0.id == entry.id }
+        }
         persist()
     }
 
@@ -116,7 +121,9 @@ final class AppLibraryStore: ObservableObject {
                 try? FileManager.default.removeItem(at: iconURL)
             }
         }
-        apps.removeAll(where: predicate)
+        withAnimation(.easeOut(duration: 0.25)) {
+            apps.removeAll(where: predicate)
+        }
         persist()
     }
 

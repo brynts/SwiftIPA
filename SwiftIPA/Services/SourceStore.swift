@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI
 
 final class SourceStore: ObservableObject {
     static let shared = SourceStore()
@@ -26,7 +27,9 @@ final class SourceStore: ObservableObject {
             appCount: payload.apps.count
         )
         await MainActor.run {
-            sources.append(source)
+            withAnimation(.easeOut(duration: 0.25)) {
+                sources.append(source)
+            }
             catalog[source.id] = payload.apps
             persist()
         }
@@ -34,13 +37,17 @@ final class SourceStore: ObservableObject {
     }
 
     func removeSource(_ source: RepositorySource) {
-        sources.removeAll { $0.id == source.id }
+        withAnimation(.easeOut(duration: 0.25)) {
+            sources.removeAll { $0.id == source.id }
+        }
         catalog.removeValue(forKey: source.id)
         persist()
     }
 
     func removeAll() {
-        sources.removeAll()
+        withAnimation(.easeOut(duration: 0.25)) {
+            sources.removeAll()
+        }
         catalog.removeAll()
         persist()
     }

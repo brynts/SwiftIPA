@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI
 
 final class PresetStore: ObservableObject {
     static let shared = PresetStore()
@@ -16,18 +17,24 @@ final class PresetStore: ObservableObject {
     @discardableResult
     func save(name: String, certificateID: UUID?, options: SigningOptions) -> SigningPreset {
         let preset = SigningPreset(name: name, certificateID: certificateID, options: options)
-        presets.append(preset)
+        withAnimation(.easeOut(duration: 0.25)) {
+            presets.append(preset)
+        }
         persist()
         return preset
     }
 
     func delete(_ preset: SigningPreset) {
-        presets.removeAll { $0.id == preset.id }
+        withAnimation(.easeOut(duration: 0.25)) {
+            presets.removeAll { $0.id == preset.id }
+        }
         persist()
     }
 
     func removeAll() {
-        presets.removeAll()
+        withAnimation(.easeOut(duration: 0.25)) {
+            presets.removeAll()
+        }
         persist()
     }
 

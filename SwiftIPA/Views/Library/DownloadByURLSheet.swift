@@ -52,6 +52,7 @@ struct DownloadByURLSheet: View {
                 }
             }
             .siScreen()
+            .presentationDragIndicator(.visible)
             .navigationTitle("Download IPA")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

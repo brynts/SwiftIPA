@@ -37,6 +37,7 @@ struct CertificatesView: View {
                 NavigationLink(value: certificate) {
                     CertificateRow(certificate: certificate, isDefault: certificate.id == certificateStore.defaultCertificateID)
                 }
+                .buttonStyle(.siPressableCard)
             }
             .onDelete { offsets in
                 for index in offsets { certificateStore.removeCertificate(certificateStore.certificates[index]) }

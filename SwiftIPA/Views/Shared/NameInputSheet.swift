@@ -16,6 +16,7 @@ struct NameInputSheet: View {
                     .autocorrectionDisabled()
             }
             .siScreen()
+            .presentationDragIndicator(.visible)
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

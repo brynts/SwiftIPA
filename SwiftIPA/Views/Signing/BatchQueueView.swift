@@ -45,9 +45,12 @@ struct BatchQueueView: View {
                             BatchJobRow(job: job)
                         }
                     }
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
                 }
             }
+            .animation(.easeOut(duration: 0.3), value: hasStarted)
             .siScreen()
+            .presentationDragIndicator(.visible)
             .navigationTitle("Batch Sign")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -104,7 +107,9 @@ private struct BatchJobRow: View {
             Text(job.displayName)
             Spacer()
             statusView
+                .transition(.opacity.combined(with: .scale(scale: 0.9)))
         }
+        .animation(.easeOut(duration: 0.2), value: job.status)
     }
 
     @ViewBuilder

@@ -86,6 +86,7 @@ struct InspectorReportView: View {
                 }
             }
             .siScreen()
+            .presentationDragIndicator(.visible)
             .navigationTitle("Inspector")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

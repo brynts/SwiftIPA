@@ -112,14 +112,16 @@ struct LibraryView: View {
     private func libraryRow(for entry: AppEntry) -> some View {
         if isSelecting {
             Button {
-                toggleSelection(entry)
+                withAnimation(.easeOut(duration: 0.15)) { toggleSelection(entry) }
             } label: {
                 AppRow(entry: entry, isSelected: selection.contains(entry.id))
             }
+            .buttonStyle(.siPressableCard)
         } else {
             NavigationLink(value: entry) {
                 AppRow(entry: entry, isSelected: false)
             }
+            .buttonStyle(.siPressableCard)
         }
     }
 

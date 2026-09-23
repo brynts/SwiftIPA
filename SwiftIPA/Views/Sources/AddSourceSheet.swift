@@ -28,6 +28,7 @@ struct AddSourceSheet: View {
                 }
             }
             .siScreen()
+            .presentationDragIndicator(.visible)
             .navigationTitle("Add Source")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

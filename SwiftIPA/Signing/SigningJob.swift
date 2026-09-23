@@ -9,6 +9,13 @@ enum SigningJobStatus: Equatable {
     case cached
     case done(TimeInterval)
     case failed(String)
+
+    var isInProgress: Bool {
+        switch self {
+        case .queued, .extracting, .patching, .signing, .packaging: return true
+        case .cached, .done, .failed: return false
+        }
+    }
 }
 
 final class SigningJob: Identifiable, ObservableObject {

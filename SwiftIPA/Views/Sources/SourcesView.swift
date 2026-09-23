@@ -37,6 +37,7 @@ struct SourcesView: View {
                 NavigationLink(value: source) {
                     SourceRow(source: source)
                 }
+                .buttonStyle(.siPressableCard)
             }
             .onDelete { offsets in
                 for index in offsets { sourceStore.removeSource(sourceStore.sources[index]) }
