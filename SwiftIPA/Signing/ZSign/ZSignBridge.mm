@@ -41,19 +41,21 @@
         block();
         return @"";
     }
+    int readFD = pipeFDs[0];
+    int writeFD = pipeFDs[1];
     int savedStdout = dup(STDOUT_FILENO);
-    dup2(pipeFDs[1], STDOUT_FILENO);
-    close(pipeFDs[1]);
+    dup2(writeFD, STDOUT_FILENO);
+    close(writeFD);
 
     NSMutableData *captured = [NSMutableData data];
     dispatch_semaphore_t readerDone = dispatch_semaphore_create(0);
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
         uint8_t buffer[4096];
         ssize_t bytesRead;
-        while ((bytesRead = read(pipeFDs[0], buffer, sizeof(buffer))) > 0) {
+        while ((bytesRead = read(readFD, buffer, sizeof(buffer))) > 0) {
             [captured appendBytes:buffer length:(NSUInteger)bytesRead];
         }
-        close(pipeFDs[0]);
+        close(readFD);
         dispatch_semaphore_signal(readerDone);
     });
 
