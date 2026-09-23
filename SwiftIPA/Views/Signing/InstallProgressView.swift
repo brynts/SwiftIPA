@@ -7,6 +7,7 @@ struct InstallProgressView: View {
     @State private var errorMessage: String?
     @State private var isPreparing = true
     @State private var showingTrustSheet = false
+    @State private var hasTrustedCertificate = UserDefaults.standard.bool(forKey: "SwiftIPA.hasTrustedLocalCertificate")
 
     @Environment(\.dismiss) private var dismiss
 
@@ -26,25 +27,37 @@ struct InstallProgressView: View {
                     Text(errorMessage)
                         .multilineTextAlignment(.center)
                         .foregroundStyle(SIColor.textSecondary)
-                    Button("Trust SwiftIPA's Local Certificate") { showingTrustSheet = true }
-                        .buttonStyle(.siSecondary)
+                    trustSteps
+                } else if !hasTrustedCertificate {
+                    Image(systemName: "lock.shield.fill")
+                        .font(.system(size: 40))
+                        .foregroundStyle(SIColor.accent)
+                    Text("One-time setup")
+                        .font(SIFont.headline)
+                    Text("Before your first direct install, iOS needs to trust SwiftIPA's local certificate. Do this once — every install after is a single tap.")
+                        .font(SIFont.caption)
+                        .foregroundStyle(SIColor.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, SISpacing.xl)
+                    trustSteps
+                    Button("I've Trusted It — Continue") {
+                        hasTrustedCertificate = true
+                        UserDefaults.standard.set(true, forKey: "SwiftIPA.hasTrustedLocalCertificate")
+                    }
+                    .buttonStyle(.siPrimaryWide)
+                    .padding(.horizontal, SISpacing.xl)
                 } else if let installURL {
                     Image(systemName: "wifi")
                         .font(.system(size: 40))
                         .foregroundStyle(SIColor.accent)
                     Text("Ready to install over your local network.")
                         .font(SIFont.headline)
-                    Text("The first time you do this, iOS will ask you to trust SwiftIPA's local certificate in Settings → General → VPN & Device Management.")
-                        .font(SIFont.caption)
-                        .foregroundStyle(SIColor.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, SISpacing.xl)
                     Button("Install Now") {
                         UIApplication.shared.open(installURL)
                     }
                     .buttonStyle(.siPrimaryWide)
                     .padding(.horizontal, SISpacing.xl)
-                    Button("Trust Local Certificate") { showingTrustSheet = true }
+                    Button("Trust Certificate Again") { showingTrustSheet = true }
                         .buttonStyle(.siSecondary)
                 }
             }
@@ -68,6 +81,34 @@ struct InstallProgressView: View {
             .task {
                 await startServer()
             }
+        }
+    }
+
+    private var trustSteps: some View {
+        VStack(alignment: .leading, spacing: SISpacing.sm) {
+            trustStep(number: 1, text: String(localized: "Tap \"Trust Local Certificate\" below and save the file to Files."))
+            trustStep(number: 2, text: String(localized: "Open the saved file — iOS will offer to install a profile."))
+            trustStep(number: 3, text: String(localized: "Settings → General → VPN & Device Management → SwiftIPA Local Server → Trust."))
+            Button("Trust Local Certificate") { showingTrustSheet = true }
+                .buttonStyle(.siSecondary)
+                .padding(.top, SISpacing.xs)
+        }
+        .padding(SISpacing.md)
+        .siCard()
+        .padding(.horizontal, SISpacing.md)
+    }
+
+    private func trustStep(number: Int, text: String) -> some View {
+        HStack(alignment: .top, spacing: SISpacing.sm) {
+            Text("\(number)")
+                .font(SIFont.caption.bold())
+                .foregroundStyle(Color.black)
+                .frame(width: 20, height: 20)
+                .background(SIColor.accent)
+                .clipShape(Circle())
+            Text(text)
+                .font(SIFont.caption)
+                .foregroundStyle(SIColor.textSecondary)
         }
     }
 

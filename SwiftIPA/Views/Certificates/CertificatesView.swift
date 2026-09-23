@@ -9,20 +9,7 @@ struct CertificatesView: View {
             if certificateStore.certificates.isEmpty {
                 emptyState
             } else {
-                List {
-                    ForEach(certificateStore.certificates) { certificate in
-                        NavigationLink(value: certificate) {
-                            CertificateRow(certificate: certificate, isDefault: certificate.id == certificateStore.defaultCertificateID)
-                        }
-                    }
-                    .listRowInsets(EdgeInsets(top: SISpacing.xs, leading: SISpacing.md, bottom: SISpacing.xs, trailing: SISpacing.md))
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-                    .onDelete { offsets in
-                        for index in offsets { certificateStore.removeCertificate(certificateStore.certificates[index]) }
-                    }
-                }
-                .listStyle(.plain)
+                certificateList
             }
         }
         .siScreen()
@@ -42,6 +29,23 @@ struct CertificatesView: View {
         .sheet(isPresented: $showingAddSheet) {
             AddCertificateSheet()
         }
+    }
+
+    private var certificateList: some View {
+        List {
+            ForEach(certificateStore.certificates) { certificate in
+                NavigationLink(value: certificate) {
+                    CertificateRow(certificate: certificate, isDefault: certificate.id == certificateStore.defaultCertificateID)
+                }
+            }
+            .listRowInsets(EdgeInsets(top: SISpacing.xs, leading: SISpacing.md, bottom: SISpacing.xs, trailing: SISpacing.md))
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+            .onDelete { offsets in
+                for index in offsets { certificateStore.removeCertificate(certificateStore.certificates[index]) }
+            }
+        }
+        .listStyle(.plain)
     }
 
     private var emptyState: some View {

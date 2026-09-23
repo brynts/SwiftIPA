@@ -13,83 +13,100 @@ struct TweaksLibraryView: View {
                 ProgressView("Importing…")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if dylibStore.dylibs.isEmpty {
-                VStack(spacing: SISpacing.md) {
-                    Image(systemName: "puzzlepiece.extension.fill")
-                        .font(.system(size: 40))
-                        .foregroundStyle(SIColor.accent)
-                    Text("No tweaks yet")
-                        .font(SIFont.headline)
-                    Text("Import a .dylib or .deb file to inject it into apps you sign.")
-                        .font(SIFont.caption)
-                        .foregroundStyle(SIColor.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, SISpacing.xl)
-                    Button("Import Tweak") { showingPicker = true }
-                        .buttonStyle(.siPrimary)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                emptyState
             } else {
-                List {
-                    ForEach(dylibStore.dylibs) { dylib in
-                        HStack {
-                            Image(systemName: "puzzlepiece.extension.fill")
-                                .foregroundStyle(SIColor.accent)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(dylib.displayName).font(SIFont.headline)
-                                Text(dylib.displaySize).font(SIFont.caption).foregroundStyle(SIColor.textSecondary)
-                            }
-                        }
-                        .padding(SISpacing.sm + 2)
-                        .siCard()
-                        .listRowInsets(EdgeInsets(top: SISpacing.xs, leading: SISpacing.md, bottom: SISpacing.xs, trailing: SISpacing.md))
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-                    }
-                    .onDelete { offsets in
-                        for index in offsets { dylibStore.remove(dylibStore.dylibs[index]) }
-                    }
-                }
-                .listStyle(.plain)
+                tweaksList
             }
         }
         .siScreen()
         .navigationTitle("Tweak Library")
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    showingPicker = true
-                } label: {
-                    Image(systemName: "plus")
-                }
-            }
-        }
-        .sheet(isPresented: $showingPicker) {
-            DocumentPickerView(
-                contentTypes: [.data, .item],
-                allowsMultipleSelection: true
-            ) { urls in
-                guard !urls.isEmpty else { return }
-                isImporting = true
-                Task {
-                    var firstError: String?
-                    for url in urls {
-                        do {
-                            _ = try await dylibStore.importFile(at: url)
-                        } catch {
-                            if firstError == nil { firstError = error.localizedDescription }
-                        }
-                    }
-                    await MainActor.run {
-                        isImporting = false
-                        errorMessage = firstError
-                    }
-                }
-            }
-        }
+        .toolbar { tweaksToolbar }
+        .sheet(isPresented: $showingPicker) { tweaksPicker }
         .alert("Import Failed", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
             Button("OK") { errorMessage = nil }
         } message: {
             Text(errorMessage ?? "")
+        }
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: SISpacing.md) {
+            Image(systemName: "puzzlepiece.extension.fill")
+                .font(.system(size: 40))
+                .foregroundStyle(SIColor.accent)
+            Text("No tweaks yet")
+                .font(SIFont.headline)
+            Text("Import a .dylib or .deb file to inject it into apps you sign.")
+                .font(SIFont.caption)
+                .foregroundStyle(SIColor.textSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, SISpacing.xl)
+            Button("Import Tweak") { showingPicker = true }
+                .buttonStyle(.siPrimary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var tweaksList: some View {
+        List {
+            ForEach(dylibStore.dylibs) { dylib in
+                tweakRow(for: dylib)
+            }
+            .onDelete { offsets in
+                for index in offsets { dylibStore.remove(dylibStore.dylibs[index]) }
+            }
+        }
+        .listStyle(.plain)
+    }
+
+    private func tweakRow(for dylib: InjectedDylib) -> some View {
+        HStack {
+            Image(systemName: "puzzlepiece.extension.fill")
+                .foregroundStyle(SIColor.accent)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(dylib.displayName).font(SIFont.headline)
+                Text(dylib.displaySize).font(SIFont.caption).foregroundStyle(SIColor.textSecondary)
+            }
+        }
+        .padding(SISpacing.sm + 2)
+        .siCard()
+        .listRowInsets(EdgeInsets(top: SISpacing.xs, leading: SISpacing.md, bottom: SISpacing.xs, trailing: SISpacing.md))
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
+    }
+
+    @ToolbarContentBuilder
+    private var tweaksToolbar: some ToolbarContent {
+        ToolbarItem(placement: .navigationBarTrailing) {
+            Button {
+                showingPicker = true
+            } label: {
+                Image(systemName: "plus")
+            }
+        }
+    }
+
+    private var tweaksPicker: some View {
+        DocumentPickerView(
+            contentTypes: [.data, .item],
+            allowsMultipleSelection: true
+        ) { urls in
+            guard !urls.isEmpty else { return }
+            isImporting = true
+            Task {
+                var firstError: String?
+                for url in urls {
+                    do {
+                        _ = try await dylibStore.importFile(at: url)
+                    } catch {
+                        if firstError == nil { firstError = error.localizedDescription }
+                    }
+                }
+                await MainActor.run {
+                    isImporting = false
+                    errorMessage = firstError
+                }
+            }
         }
     }
 }

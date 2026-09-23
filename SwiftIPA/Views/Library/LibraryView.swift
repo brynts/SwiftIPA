@@ -26,27 +26,7 @@ struct LibraryView: View {
             if library.apps.isEmpty && !isImporting {
                 emptyState
             } else {
-                List {
-                    ForEach(filteredApps) { entry in
-                        if isSelecting {
-                            Button {
-                                toggleSelection(entry)
-                            } label: {
-                                AppRow(entry: entry, isSelected: selection.contains(entry.id))
-                            }
-                        } else {
-                            NavigationLink(value: entry) {
-                                AppRow(entry: entry, isSelected: false)
-                            }
-                        }
-                    }
-                    .listRowInsets(EdgeInsets(top: SISpacing.xs, leading: SISpacing.md, bottom: SISpacing.xs, trailing: SISpacing.md))
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-                    .onDelete(perform: delete)
-                }
-                .listStyle(.plain)
-                .searchable(text: $searchText, prompt: Text("Search your library"))
+                libraryList
             }
         }
         .overlay {
@@ -108,6 +88,35 @@ struct LibraryView: View {
             Button("OK") { importError = nil }
         } message: {
             Text(importError ?? "")
+        }
+    }
+
+    private var libraryList: some View {
+        List {
+            ForEach(filteredApps) { entry in
+                libraryRow(for: entry)
+            }
+            .listRowInsets(EdgeInsets(top: SISpacing.xs, leading: SISpacing.md, bottom: SISpacing.xs, trailing: SISpacing.md))
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+            .onDelete(perform: delete)
+        }
+        .listStyle(.plain)
+        .searchable(text: $searchText, prompt: Text("Search your library"))
+    }
+
+    @ViewBuilder
+    private func libraryRow(for entry: AppEntry) -> some View {
+        if isSelecting {
+            Button {
+                toggleSelection(entry)
+            } label: {
+                AppRow(entry: entry, isSelected: selection.contains(entry.id))
+            }
+        } else {
+            NavigationLink(value: entry) {
+                AppRow(entry: entry, isSelected: false)
+            }
         }
     }
 

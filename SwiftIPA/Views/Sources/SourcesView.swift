@@ -9,20 +9,7 @@ struct SourcesView: View {
             if sourceStore.sources.isEmpty {
                 emptyState
             } else {
-                List {
-                    ForEach(sourceStore.sources) { source in
-                        NavigationLink(value: source) {
-                            SourceRow(source: source)
-                        }
-                    }
-                    .listRowInsets(EdgeInsets(top: SISpacing.xs, leading: SISpacing.md, bottom: SISpacing.xs, trailing: SISpacing.md))
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-                    .onDelete { offsets in
-                        for index in offsets { sourceStore.removeSource(sourceStore.sources[index]) }
-                    }
-                }
-                .listStyle(.plain)
+                sourceList
             }
         }
         .siScreen()
@@ -42,6 +29,23 @@ struct SourcesView: View {
         .sheet(isPresented: $showingAddSheet) {
             AddSourceSheet()
         }
+    }
+
+    private var sourceList: some View {
+        List {
+            ForEach(sourceStore.sources) { source in
+                NavigationLink(value: source) {
+                    SourceRow(source: source)
+                }
+            }
+            .listRowInsets(EdgeInsets(top: SISpacing.xs, leading: SISpacing.md, bottom: SISpacing.xs, trailing: SISpacing.md))
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+            .onDelete { offsets in
+                for index in offsets { sourceStore.removeSource(sourceStore.sources[index]) }
+            }
+        }
+        .listStyle(.plain)
     }
 
     private var emptyState: some View {
