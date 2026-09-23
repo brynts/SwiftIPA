@@ -15,11 +15,19 @@
       "category": "utilities",
       "version": "1.1.0",
       "versionDate": "2026-09-23",
-      "versionDescription": "- Match Feather's actual install trigger logic: HTTPS+LAN with a direct itms-services open is the default (their proven primary path), plain HTTP+LAN through the embedded Safari redirect page is now the true no-trust fallback\n- Update AltStore source for build 16",
-      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-17/SwiftIPA-unsigned.ipa",
-      "size": 3084693,
+      "versionDescription": "- Fix the no-profile install path: serve the manifest through a properly reachable HTTPS source\n- Update AltStore source for build 17",
+      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-18/SwiftIPA-unsigned.ipa",
+      "size": 3086995,
       "minOSVersion": "16.0",
       "versions": [
+        {
+          "version": "1.1.0",
+          "date": "2026-09-23",
+          "localizedDescription": "- Fix the no-profile install path: serve the manifest through a properly reachable HTTPS source\n- Update AltStore source for build 17",
+          "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-18/SwiftIPA-unsigned.ipa",
+          "size": 3086995,
+          "minOSVersion": "16.0"
+        },
         {
           "version": "1.1.0",
           "date": "2026-09-23",
