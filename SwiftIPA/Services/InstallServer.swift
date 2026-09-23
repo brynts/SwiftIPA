@@ -220,8 +220,7 @@ final class InstallServer {
         <!DOCTYPE html>
         <html>
         <head><meta name="viewport" content="width=device-width, initial-scale=1"></head>
-        <body style="background:#000;color:#fff;font-family:-apple-system;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">
-        <p>Starting installation…</p>
+        <body style="background:#000;margin:0;height:100vh;">
         <script>window.location = "\(itmsServicesLink)";</script>
         </body>
         </html>
