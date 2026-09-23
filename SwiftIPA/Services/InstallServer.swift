@@ -28,19 +28,19 @@ struct InstallLink {
 
 enum InstallMode {
     case secureDirect
-    case plainWebView
+    case externalManifest
 
     var useSecureConnection: Bool {
         switch self {
         case .secureDirect: return true
-        case .plainWebView: return false
+        case .externalManifest: return false
         }
     }
 
     var presentationStyle: InstallPresentationStyle {
         switch self {
         case .secureDirect: return .direct
-        case .plainWebView: return .webView
+        case .externalManifest: return .webView
         }
     }
 }
@@ -56,6 +56,7 @@ final class InstallServer {
     private var scheme = "http"
     private var host = "127.0.0.1"
     private var port: UInt16 = 8442
+    private var currentMode: InstallMode = .secureDirect
     private let queue = DispatchQueue(label: "com.xsxs18.SwiftIPA.InstallServer")
 
     private init() {}
@@ -75,6 +76,7 @@ final class InstallServer {
         self.version = version
         self.scheme = mode.useSecureConnection ? "https" : "http"
         self.port = mode.useSecureConnection ? 8443 : 8442
+        self.currentMode = mode
 
         guard let address = Self.wifiIPAddress() else { throw InstallServerError.noAddress }
         self.host = address
@@ -179,9 +181,26 @@ final class InstallServer {
         }
     }
 
+    private var manifestSourceURL: URL {
+        switch currentMode {
+        case .secureDirect:
+            return URL(string: "\(scheme)://\(host):\(port)/manifest.plist")!
+        case .externalManifest:
+            let payloadURL = "\(scheme)://\(host):\(port)/app.ipa"
+            var components = URLComponents(string: "https://api.palera.in/genPlist")!
+            components.queryItems = [
+                URLQueryItem(name: "bundleid", value: bundleIdentifier),
+                URLQueryItem(name: "name", value: appName),
+                URLQueryItem(name: "version", value: version),
+                URLQueryItem(name: "fetchurl", value: payloadURL)
+            ]
+            return components.url!
+        }
+    }
+
     private var itmsServicesLink: String {
-        let manifestURL = "\(scheme)://\(host):\(port)/manifest.plist"
-        let encoded = manifestURL.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? manifestURL
+        let manifestString = manifestSourceURL.absoluteString
+        let encoded = manifestString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? manifestString
         return "itms-services://?action=download-manifest&url=\(encoded)"
     }
 

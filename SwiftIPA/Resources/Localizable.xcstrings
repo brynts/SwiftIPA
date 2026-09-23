@@ -1321,6 +1321,16 @@
         }
       }
     },
+    "No certificate, no profile — this uses a small public relay just to hand iOS a properly hosted install manifest. Your IPA itself never leaves your device.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kein Zertifikat, kein Profil — das nutzt einen kleinen öffentlichen Vermittler, nur um iOS ein korrekt gehostetes Installations-Manifest zu geben. Deine IPA selbst verlässt nie dein Gerät."
+          }
+        }
+      }
+    },
     "No certificates yet": {
       "localizations": {
         "de": {
@@ -1557,6 +1567,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "In Warteschlange"
+          }
+        }
+      }
+    },
+    "Queued…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In Warteschlange…"
           }
         }
       }
@@ -2261,6 +2281,26 @@
         }
       }
     },
+    "Try Without a Certificate Instead": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stattdessen ohne Zertifikat versuchen"
+          }
+        }
+      }
+    },
+    "Try the Certificate Method Instead": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stattdessen Zertifikat-Methode versuchen"
+          }
+        }
+      }
+    },
     "Try the No-Trust Method Instead": {
       "localizations": {
         "de": {
@@ -2517,6 +2557,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "\\(relativePath) hat noch die FairPlay-Verschlüsselung des App Store. Das Signieren läuft weiter, aber diese Datei ist vermutlich ein gecrackter oder DRM-geschützter Build."
+          }
+        }
+      }
+    },
+    "com.example.app": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "com.beispiel.app"
+          }
+        }
+      }
+    },
+    "https://example.com/app.ipa": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "https://beispiel.de/app.ipa"
+          }
+        }
+      }
+    },
+    "https://example.com/repo.json": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "https://beispiel.de/repo.json"
           }
         }
       }

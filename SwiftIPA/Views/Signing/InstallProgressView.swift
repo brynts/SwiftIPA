@@ -30,7 +30,7 @@ struct InstallProgressView: View {
                         .foregroundStyle(SIColor.textSecondary)
                         .padding(.horizontal, SISpacing.xl)
                     if !isUsingFallback {
-                        Button("Try the No-Trust Method Instead") {
+                        Button("Try the Certificate Method Instead") {
                             Task { await startServer(useFallback: true) }
                         }
                         .buttonStyle(.siPrimaryWide)
@@ -42,8 +42,14 @@ struct InstallProgressView: View {
                         .foregroundStyle(SIColor.accent)
                     Text("Ready to install.")
                         .font(SIFont.headline)
-                    if !isUsingFallback {
+                    if isUsingFallback {
                         trustSteps
+                    } else {
+                        Text("No certificate, no profile — this uses a small public relay just to hand iOS a properly hosted install manifest. Your IPA itself never leaves your device.")
+                            .font(SIFont.caption)
+                            .foregroundStyle(SIColor.textSecondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, SISpacing.xl)
                     }
                     Button("Install Now") {
                         switch installLink.presentationStyle {
@@ -56,12 +62,12 @@ struct InstallProgressView: View {
                     .buttonStyle(.siPrimaryWide)
                     .padding(.horizontal, SISpacing.xl)
                     if !isUsingFallback {
-                        Button("Didn't Work? Try Without Trusting a Certificate") {
+                        Button("Didn't Work? Try the Certificate Method") {
                             Task { await startServer(useFallback: true) }
                         }
                         .buttonStyle(.siSecondary)
                     } else {
-                        Button("Didn't Work? Try the Certificate Method") {
+                        Button("Try Without a Certificate Instead") {
                             Task { await startServer(useFallback: false) }
                         }
                         .buttonStyle(.siSecondary)
@@ -102,9 +108,6 @@ struct InstallProgressView: View {
             trustStep(number: 1, text: String(localized: "Tap \"Trust Local Certificate\" below and save the file to Files."))
             trustStep(number: 2, text: String(localized: "Open the saved file — iOS will offer to install a profile."))
             trustStep(number: 3, text: String(localized: "Settings → General → VPN & Device Management → SwiftIPA Local Server → Trust."))
-            Text("Only needed once, ever.")
-                .font(SIFont.caption.bold())
-                .foregroundStyle(SIColor.textSecondary)
             Button("Trust Local Certificate") { showingTrustSheet = true }
                 .buttonStyle(.siSecondary)
                 .padding(.top, SISpacing.xs)
@@ -142,7 +145,7 @@ struct InstallProgressView: View {
                 appName: entry.name,
                 bundleIdentifier: entry.bundleIdentifier,
                 version: entry.displayVersion,
-                mode: useFallback ? .plainWebView : .secureDirect
+                mode: useFallback ? .secureDirect : .externalManifest
             )
             await MainActor.run {
                 installLink = link
