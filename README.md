@@ -14,6 +14,15 @@ I wanted a signer that feels quick and doesn't get in the way, so I built one. Y
 
 There's no account and no tracking. The app only goes online when you ask it to: downloading an IPA, loading a source, checking for updates, or installing (more on that below).
 
+## Screenshots
+
+<p align="center">
+  <img src=".github/assets/screenshots/install.png" width="200" alt="Installing an app with the status bar" />
+  <img src=".github/assets/screenshots/inspector.png" width="200" alt="IPA inspector" />
+  <img src=".github/assets/screenshots/settings.png" width="200" alt="Settings with themes" />
+  <img src=".github/assets/screenshots/settings-more.png" width="200" alt="More settings" />
+</p>
+
 ## Features
 
 - Change the bundle ID, name, version, build, minimum iOS version, icon and entitlements
