@@ -13,13 +13,21 @@
       "iconURL": "https://raw.githubusercontent.com/xsxs18-dev/SwiftIPA/main/SwiftIPA/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png",
       "tintColor": "#FF9F0A",
       "category": "utilities",
-      "version": "1.5.1",
-      "versionDate": "2026-09-23",
-      "versionDescription": "- Fix three real bugs: extracted framework binaries kept their read-only zip permissions so zsign couldn't open them read-write to re-sign, the hidden install web view had no navigation delegate so itms-services links were silently dropped, and streamline the no-profile install to trigger automatically instead of requiring a second tap\n- Update AltStore source for build 27",
-      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-28/SwiftIPA-unsigned.ipa",
-      "size": 3135675,
+      "version": "1.6.0",
+      "versionDate": "2026-09-24",
+      "versionDescription": "- feat: replace install screen with a live status pill and stop the paste prompt on launch\n- Update AltStore source for build 28",
+      "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-29/SwiftIPA-unsigned.ipa",
+      "size": 3120451,
       "minOSVersion": "16.0",
       "versions": [
+        {
+          "version": "1.6.0",
+          "date": "2026-09-24",
+          "localizedDescription": "- feat: replace install screen with a live status pill and stop the paste prompt on launch\n- Update AltStore source for build 28",
+          "downloadURL": "https://github.com/xsxs18-dev/SwiftIPA/releases/download/build-29/SwiftIPA-unsigned.ipa",
+          "size": 3120451,
+          "minOSVersion": "16.0"
+        },
         {
           "version": "1.5.1",
           "date": "2026-09-23",
