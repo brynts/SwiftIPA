@@ -1941,16 +1941,6 @@
         }
       }
     },
-    "SwiftIPA couldn't find your device's Wi-Fi address. Make sure you're connected to Wi-Fi.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SwiftIPA konnte die Wi-Fi-Adresse deines Geräts nicht finden. Stelle sicher, dass du mit WLAN verbunden bist."
-          }
-        }
-      }
-    },
     "SwiftIPA couldn't prepare its local server certificate.": {
       "localizations": {
         "de": {

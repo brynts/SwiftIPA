@@ -4,13 +4,11 @@ import Security
 
 enum InstallServerError: LocalizedError {
     case noIdentity
-    case noAddress
     case listenerFailed(String)
 
     var errorDescription: String? {
         switch self {
         case .noIdentity: return String(localized: "SwiftIPA couldn't prepare its local server certificate.")
-        case .noAddress: return String(localized: "SwiftIPA couldn't find your device's Wi-Fi address. Make sure you're connected to Wi-Fi.")
         case .listenerFailed(let message): return message
         }
     }
@@ -89,12 +87,7 @@ final class InstallServer {
         self.port = mode.useSecureConnection ? 8443 : 8442
         self.currentMode = mode
 
-        if preferLoopback {
-            self.host = "127.0.0.1"
-        } else {
-            guard let address = Self.wifiIPAddress() else { throw InstallServerError.noAddress }
-            self.host = address
-        }
+        self.host = preferLoopback ? "127.0.0.1" : (Self.wifiIPAddress() ?? "127.0.0.1")
 
         let parameters: NWParameters
         if mode.useSecureConnection {
