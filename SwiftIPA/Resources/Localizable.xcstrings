@@ -2720,6 +2720,16 @@
           }
         }
       }
+    },
+    "SwiftIPA can't install over itself, iOS closes it mid-transfer. Use Export IPA and install it with another signer.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SwiftIPA kann sich nicht selbst überschreiben, iOS beendet die App mitten in der Übertragung. Nutze Export IPA und installiere es mit einem anderen Signer."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

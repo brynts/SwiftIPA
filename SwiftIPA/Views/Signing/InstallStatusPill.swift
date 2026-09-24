@@ -20,7 +20,7 @@ struct InstallStatusPill: View {
                     Text(detail)
                         .font(SIFont.caption)
                         .foregroundStyle(SIColor.textSecondary)
-                        .lineLimit(2)
+                        .lineLimit(4)
                 }
                 if case .sendingPayload(let fraction) = status {
                     ProgressView(value: fraction)
@@ -129,6 +129,10 @@ struct InstallStatusPill: View {
     private func start() async {
         guard let entry = AppLibraryStore.shared.apps.first(where: { $0.id == entryID }) else {
             onClose()
+            return
+        }
+        guard entry.bundleIdentifier != Bundle.main.bundleIdentifier else {
+            status = .failed(String(localized: "SwiftIPA can't install over itself, iOS closes it mid-transfer. Use Export IPA and install it with another signer."))
             return
         }
         InstallServer.shared.onStatus = { newStatus in

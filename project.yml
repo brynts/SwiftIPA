@@ -48,7 +48,7 @@ targets:
         UIFileSharingEnabled: true
         LSSupportsOpeningDocumentsInPlace: true
         CFBundleVersion: "0"
-        CFBundleShortVersionString: "1.6.1"
+        CFBundleShortVersionString: "1.6.2"
         CFBundleLocalizations:
           - en
           - de
