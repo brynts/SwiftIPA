@@ -121,9 +121,15 @@ struct AppDetailView: View {
         .sheet(isPresented: $showingShareSheet) {
             ShareSheet(items: [library.ipaURL(for: entry)])
         }
-        .sheet(isPresented: $showingInstall) {
-            InstallProgressView(entryID: entry.id)
+        .overlay(alignment: .bottom) {
+            if showingInstall {
+                InstallStatusPill(entryID: entry.id) {
+                    showingInstall = false
+                }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
         }
+        .animation(.spring(response: 0.35, dampingFraction: 0.85), value: showingInstall)
         .alert("Inspection Failed", isPresented: Binding(get: { inspectionError != nil }, set: { if !$0 { inspectionError = nil } })) {
             Button("OK") { inspectionError = nil }
         } message: {

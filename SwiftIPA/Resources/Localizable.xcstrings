@@ -1051,16 +1051,6 @@
         }
       }
     },
-    "Install Now": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Jetzt installieren"
-          }
-        }
-      }
-    },
     "Install on this device": {
       "localizations": {
         "de": {
@@ -1281,16 +1271,6 @@
         }
       }
     },
-    "No certificate, no profile — this uses a small public relay just to hand iOS a properly hosted install manifest. Your IPA itself never leaves your device.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kein Zertifikat, kein Profil — das nutzt einen kleinen öffentlichen Vermittler, nur um iOS ein korrekt gehostetes Installations-Manifest zu geben. Deine IPA selbst verlässt nie dein Gerät."
-          }
-        }
-      }
-    },
     "No certificates yet": {
       "localizations": {
         "de": {
@@ -1397,16 +1377,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Stattdessen in Safari öffnen"
-          }
-        }
-      }
-    },
-    "Open the saved file — iOS will offer to install a profile.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Öffne die gespeicherte Datei — iOS bietet an, ein Profil zu installieren."
           }
         }
       }
@@ -1567,16 +1537,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bereit zur Installation über dein lokales Netzwerk."
-          }
-        }
-      }
-    },
-    "Ready to install.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bereit zur Installation."
           }
         }
       }
@@ -1831,16 +1791,6 @@
         }
       }
     },
-    "Settings → General → VPN & Device Management → SwiftIPA Local Server → Trust.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Einstellungen → Allgemein → VPN & Geräteverwaltung → SwiftIPA Local Server → Vertrauen."
-          }
-        }
-      }
-    },
     "Shared from another app": {
       "localizations": {
         "de": {
@@ -2021,16 +1971,6 @@
         }
       }
     },
-    "Tap \\\"Trust Local Certificate\\\" below and save the file to Files.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tippe unten auf „Lokalem Zertifikat vertrauen“ und speichere die Datei in Dateien."
-          }
-        }
-      }
-    },
     "Team": {
       "localizations": {
         "de": {
@@ -2201,16 +2141,6 @@
         }
       }
     },
-    "Trust Local Certificate": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lokalem Zertifikat vertrauen"
-          }
-        }
-      }
-    },
     "Trust SwiftIPA's Local Certificate": {
       "localizations": {
         "de": {
@@ -2227,26 +2157,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Erneut versuchen"
-          }
-        }
-      }
-    },
-    "Try Without a Certificate Instead": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Stattdessen ohne Zertifikat versuchen"
-          }
-        }
-      }
-    },
-    "Try the Certificate Method Instead": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Stattdessen Zertifikat-Methode versuchen"
           }
         }
       }
@@ -2571,16 +2481,6 @@
         }
       }
     },
-    "Try Localhost Instead": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Stattdessen Localhost versuchen"
-          }
-        }
-      }
-    },
     "Remove all signed apps?": {
       "localizations": {
         "de": {
@@ -2751,22 +2651,82 @@
         }
       }
     },
-    "Opening install…": {
+    "Preparing install…": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Installation wird geöffnet…"
+            "value": "Installation wird vorbereitet…"
           }
         }
       }
     },
-    "Didn't Work? Try the Certificate Method": {
+    "Waiting for iOS…": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hat nicht geklappt? Zertifikat-Methode versuchen"
+            "value": "Warte auf iOS…"
+          }
+        }
+      }
+    },
+    "Sending payload…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Payload wird gesendet…"
+          }
+        }
+      }
+    },
+    "Installing…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wird installiert…"
+          }
+        }
+      }
+    },
+    "Install failed": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installation fehlgeschlagen"
+          }
+        }
+      }
+    },
+    "Confirm the install prompt from iOS.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bestätige die Installationsabfrage von iOS."
+          }
+        }
+      }
+    },
+    "Keep SwiftIPA open until the transfer finishes.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lass SwiftIPA offen, bis die Übertragung fertig ist."
+          }
+        }
+      }
+    },
+    "Watch your Home Screen, the app appears there in a moment.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schau auf deinen Home-Bildschirm, die App erscheint dort gleich."
           }
         }
       }

@@ -20,6 +20,7 @@ enum InboxStore {
     }
 
     static func takePending() -> [Item] {
+        guard UIPasteboard.general.contains(pasteboardTypes: [itemType]) else { return [] }
         var remaining: [[String: Any]] = []
         var results: [Item] = []
         for entry in UIPasteboard.general.items {

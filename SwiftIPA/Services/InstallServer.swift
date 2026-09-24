@@ -45,8 +45,18 @@ enum InstallMode {
     }
 }
 
+enum InstallStatus: Equatable {
+    case preparing
+    case waitingForSystem
+    case sendingPayload(Double)
+    case installing
+    case failed(String)
+}
+
 final class InstallServer {
     static let shared = InstallServer()
+
+    var onStatus: ((InstallStatus) -> Void)?
 
     private var listener: NWListener?
     private var ipaURL: URL?
@@ -262,21 +272,39 @@ final class InstallServer {
         }
         let size = (try? FileManager.default.attributesOfItem(atPath: ipaURL.path)[.size] as? Int64) ?? 0
 
+        report(.sendingPayload(0))
         let header = "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: \(size)\r\nConnection: close\r\n\r\n"
         connection.send(content: Data(header.utf8), completion: .contentProcessed { [weak self] _ in
-            self?.streamFile(handle: handle, connection: connection)
+            self?.streamFile(handle: handle, connection: connection, sent: 0, total: size)
         })
     }
 
-    private func streamFile(handle: FileHandle, connection: NWConnection) {
+    private func streamFile(handle: FileHandle, connection: NWConnection, sent: Int64, total: Int64) {
         guard let chunk = try? handle.read(upToCount: 262_144), !chunk.isEmpty else {
             try? handle.close()
             connection.cancel()
+            report(.installing)
             return
         }
-        connection.send(content: chunk, completion: .contentProcessed { [weak self] _ in
-            self?.streamFile(handle: handle, connection: connection)
+        let newSent = sent + Int64(chunk.count)
+        connection.send(content: chunk, completion: .contentProcessed { [weak self] error in
+            guard let self else { return }
+            if error != nil {
+                try? handle.close()
+                connection.cancel()
+                return
+            }
+            if total > 0 {
+                self.report(.sendingPayload(Double(newSent) / Double(total)))
+            }
+            self.streamFile(handle: handle, connection: connection, sent: newSent, total: total)
         })
+    }
+
+    private func report(_ status: InstallStatus) {
+        DispatchQueue.main.async { [weak self] in
+            self?.onStatus?(status)
+        }
     }
 
     private func sendResponse(status: String, contentType: String, body: Data, on connection: NWConnection) {
